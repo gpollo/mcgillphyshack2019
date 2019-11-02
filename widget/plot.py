@@ -117,10 +117,23 @@ class PlotWidget(QWidget):
         if draw:
             self.__canvas.draw()
 
-    def __set_hovered_point(self, x, y):
+    def __set_hovered_point(self, point):
+        (x, y) = point
         self.__remove_hovered_point(draw=False)
         self.__hovered_point = self.__axes.scatter([x], [y], marker='o', s=50, color="red")
         self.__canvas.draw()
+
+    def __get_point_from_event(self, event):
+        (x, y) = (event.xdata, event.ydata)
+        if x is None or y is None:
+            return None
+
+        point = self.__mapper.get_closests(x, y, radius=1)
+        if point is None:
+            return None
+
+        (_, _, x, y) = point[0]
+        return (x, y)
 
     def __on_button_press(self, event):
         print(event)
@@ -129,16 +142,9 @@ class PlotWidget(QWidget):
         self.__remove_hovered_point()       
 
     def __on_motion_notify(self, event):
-        (x, y) = (event.xdata, event.ydata)
-        if x is None or y is None:
-            self.__remove_hovered_point()
-            return
-
-        point = self.__mapper.get_closests(x, y, radius=1)
+        point = self.__get_point_from_event(event)
         if point is None:
             self.__remove_hovered_point()
             return
 
-        (_, _, x, y) = point[0]
-
-        self.__set_hovered_point(x, y)
+        self.__set_hovered_point(point)

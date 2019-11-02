@@ -100,9 +100,16 @@ class one_dimensional_model(object):
         return phase, ampl
 
 
-    def compute_displacement(self,modes,w,k,k_index,branch_index,t):
+    def compute_displacement(self,modes,w_branches,w,k,t):
 
         phase,ampl = self.compute(modes)
+
+        for i in range(n):
+            if w in w_branches[i]:
+                branch_index = i
+                k_index = np.where(w_branches[i] == w)[0][0]
+            else:
+                pass
 
         phases_diff = phase[branch_index][k_index]
         ampl = ampl[branch_index][k_index]

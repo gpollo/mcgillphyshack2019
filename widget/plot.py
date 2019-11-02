@@ -73,10 +73,12 @@ class PlotWidget(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.__lines = []
+        self.__series = []
+        self.__mapper = None
         self.__canvas = FigureCanvas(Figure(figsize=(5, 3)))
         self.__canvas.setStyleSheet("background-color:transparent;")
         self.__axes = self.__canvas.figure.subplots()
-        self.__axes.plot([0,1,2,3,4], [0,1,0,1,0])
 
         self.__axes.figure.patch.set_alpha(0.5)
         self.__axes.figure.set_facecolor("None")
@@ -88,3 +90,16 @@ class PlotWidget(QWidget):
 
         # TODO: add signals for selection
         # TODO: add slots when changing plot data
+    
+    def data_series(self, series):
+        self.__series.clear()
+        for line in self.__lines:
+            line.remove()
+        self.__lines.clear()
+
+        for (x, y) in series:
+            line = self.__axes.scatter(x, y)
+            self.__lines.append(line)
+        self.__series = series
+
+        self.__mapper = LineMapper(series)

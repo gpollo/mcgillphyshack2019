@@ -16,6 +16,11 @@ class MainWindow(QWidget):
         self.__widget_right = PlotWidget()
         self.__game.start(self.__widget_left)
 
+        self.__widget_right.data_series([
+            ([0,1,2,3,4,5], [5,4,3,2,1,0]),
+            ([4,5,6,7,8,9], [8,8,8,8,8,8]),
+        ])
+
         self.__splitter = QSplitter(Qt.Horizontal)
         self.__splitter.addWidget(self.__widget_left)
         self.__splitter.addWidget(self.__widget_right)

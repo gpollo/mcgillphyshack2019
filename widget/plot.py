@@ -92,6 +92,10 @@ class PlotWidget(QWidget):
 
         # TODO: add signals for selection
         # TODO: add slots when changing plot data
+
+        self.__canvas.mpl_connect("button_press_event", self.__on_button_press)
+        self.__canvas.mpl_connect("figure_leave_event", self.__on_figure_leave)
+        self.__canvas.mpl_connect("motion_notify_event", self.__on_motion_notify)
     
     def data_series(self, series):
         self.__series.clear()
@@ -117,3 +121,24 @@ class PlotWidget(QWidget):
         self.__remove_hovered_point(draw=False)
         self.__hovered_point = self.__axes.scatter([x], [y], marker='o', s=50, color="red")
         self.__canvas.draw()
+
+    def __on_button_press(self, event):
+        print(event)
+
+    def __on_figure_leave(self, event):
+        self.__remove_hovered_point()       
+
+    def __on_motion_notify(self, event):
+        (x, y) = (event.xdata, event.ydata)
+        if x is None or y is None:
+            self.__remove_hovered_point()
+            return
+
+        point = self.__mapper.get_closests(x, y, radius=1)
+        if point is None:
+            self.__remove_hovered_point()
+            return
+
+        (_, _, x, y) = point[0]
+
+        self.__set_hovered_point(x, y)

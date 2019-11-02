@@ -88,6 +88,7 @@ class PlotWidget(QWidget):
         self.__layout.addWidget(self.__canvas)
         self.setLayout(self.__layout)
 
+        self.__selected_points = {}
         self.__hovered_point = None
 
         # TODO: add signals for selection
@@ -109,6 +110,28 @@ class PlotWidget(QWidget):
         self.__series = series
 
         self.__mapper = LineMapper(series)
+
+    def __select_point(self, point):
+        if point in self.__selected_points:
+            return
+
+        (x, y) = point
+        self.__selected_points[point] = self.__axes.scatter([x], [y], marker='o', s=50, color="blue")
+        self.__canvas.draw()
+
+    def __unselect_point(self, point):
+        if point not in self.__selected_points:
+            return
+
+        self.__selected_points[point].remove()
+        del self.__selected_points[point]
+        self.__canvas.draw()
+
+    def __toggle_point(self, point):
+        if point not in self.__selected_points:
+            self.__select_point(point)
+        else:
+            self.__unselect_point(point)
 
     def __remove_hovered_point(self, draw=True):
         if self.__hovered_point is not None:
@@ -136,7 +159,11 @@ class PlotWidget(QWidget):
         return (x, y)
 
     def __on_button_press(self, event):
-        print(event)
+        point = self.__get_point_from_event(event)
+        if point is None:
+            return
+
+        self.__toggle_point(point)
 
     def __on_figure_leave(self, event):
         self.__remove_hovered_point()       

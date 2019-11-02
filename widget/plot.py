@@ -1,7 +1,7 @@
 from matplotlib.backends.backend_qt5agg import FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5.QtWidgets import QWidget, QHBoxLayout
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from bintrees import AVLTree
 from math import sqrt
 
@@ -70,6 +70,9 @@ class LineMapper(object):
         return self.__mapping[x][y]
 
 class PlotWidget(QWidget):
+    point_selected = pyqtSignal(float, float)
+    point_unselected = pyqtSignal(float, float)
+
     def __init__(self):
         super().__init__()
 
@@ -91,13 +94,11 @@ class PlotWidget(QWidget):
         self.__selected_points = {}
         self.__hovered_point = None
 
-        # TODO: add signals for selection
-        # TODO: add slots when changing plot data
-
         self.__canvas.mpl_connect("button_press_event", self.__on_button_press)
         self.__canvas.mpl_connect("figure_leave_event", self.__on_figure_leave)
         self.__canvas.mpl_connect("motion_notify_event", self.__on_motion_notify)
-    
+
+    @pyqtSlot()
     def data_series(self, series):
         self.__series.clear()
         for line in self.__lines:
@@ -114,18 +115,23 @@ class PlotWidget(QWidget):
     def __select_point(self, point):
         if point in self.__selected_points:
             return
-
         (x, y) = point
+
         self.__selected_points[point] = self.__axes.scatter([x], [y], marker='o', s=50, color="blue")
         self.__canvas.draw()
+
+        self.point_selected.emit(x, y)
 
     def __unselect_point(self, point):
         if point not in self.__selected_points:
             return
+        (x, y) = point
 
         self.__selected_points[point].remove()
         del self.__selected_points[point]
         self.__canvas.draw()
+
+        self.point_unselected.emit(x, y)
 
     def __toggle_point(self, point):
         if point not in self.__selected_points:

@@ -4,8 +4,6 @@ from time import sleep
 import pygame
 import pygame.gfxdraw
 
-# TODO: find some way update surface size
-
 class Game(object):
     def __init__(self):
         self.__canvas = None
@@ -15,6 +13,9 @@ class Game(object):
     
     def get_surface(self):
         return self.__surface
+
+    def resize_surface(self, w, h):
+        self.__surface = pygame.Surface((w, h), pygame.SRCALPHA, 32)
 
     def start(self, canvas):
         if self.__running:
@@ -27,13 +28,19 @@ class Game(object):
 
     def game_loop(self):
         # TODO: draw something useful
-        c = 0
+        p = 0
         while self.__running:
             sleep(1/60)
-            c = (c + 1) % 255
+
+            p = (p + 0.5) % 100
+            (w, h) = self.__surface.get_size()
+            x = int((p/100) * w)
+            y = int((p/100) * h)
+            c = int((p/100) * 255)
+
             self.__surface.fill((0, 0, 0, 0))
-            pygame.gfxdraw.aacircle(self.__surface, c, c, c//10, (c, c, c))
-            pygame.gfxdraw.filled_circle(self.__surface, c, c, c//10, (c, c, c))
+            pygame.gfxdraw.aacircle(self.__surface, x, y, c, (c, c, c))
+            pygame.gfxdraw.filled_circle(self.__surface, x, y, c, (c, c, c))
             self.__canvas.update()
 
             if self.__canvas is None:

@@ -8,6 +8,11 @@ class GameWidget(QWidget):
 
         self.__game = game
 
+    def resizeEvent(self, event):
+        (w, h) = (event.size().width(), event.size().height())
+        self.__game.resize_surface(w, h)
+        return super(GameWidget, self).resizeEvent(event)
+
     def paintEvent(self,event):
         surface = self.__game.get_surface()
 

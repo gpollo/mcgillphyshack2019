@@ -1,16 +1,19 @@
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QImage, QPainter
+from pygame import transform
 
-class SurfaceWidget(QWidget):
-    def __init__(self, surface):
+class GameWidget(QWidget):
+    def __init__(self, game):
         super().__init__()
 
-        self.__surface = surface
+        self.__game = game
 
     def paintEvent(self,event):
-        w = self.__surface.get_width()
-        h = self.__surface.get_height()       
-        data = self.__surface.get_buffer().raw
+        surface = self.__game.get_surface()
+
+        w = surface.get_width()
+        h = surface.get_height()       
+        data = surface.get_buffer().raw
         image = QImage(data, w, h, QImage.Format_ARGB32)
 
         painter = QPainter()

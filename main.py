@@ -1,6 +1,6 @@
 from sys import argv, exit
 from widget.plot import PlotWidget
-from widget.surface import SurfaceWidget
+from widget.game import GameWidget
 from game import Game
 from pygame import init as pygame_init
 
@@ -12,7 +12,7 @@ class MainWindow(QWidget):
         super().__init__()
 
         self.__game = game
-        self.__widget_left = SurfaceWidget(self.__game.get_surface())
+        self.__widget_left = GameWidget(self.__game)
         self.__widget_right = PlotWidget()
         self.__game.start(self.__widget_left)
 

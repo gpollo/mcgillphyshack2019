@@ -88,6 +88,8 @@ class PlotWidget(QWidget):
         self.__layout.addWidget(self.__canvas)
         self.setLayout(self.__layout)
 
+        self.__hovered_point = None
+
         # TODO: add signals for selection
         # TODO: add slots when changing plot data
     
@@ -103,3 +105,15 @@ class PlotWidget(QWidget):
         self.__series = series
 
         self.__mapper = LineMapper(series)
+
+    def __remove_hovered_point(self, draw=True):
+        if self.__hovered_point is not None:
+            self.__hovered_point.remove()
+            self.__hovered_point = None
+        if draw:
+            self.__canvas.draw()
+
+    def __set_hovered_point(self, x, y):
+        self.__remove_hovered_point(draw=False)
+        self.__hovered_point = self.__axes.scatter([x], [y], marker='o', s=50, color="red")
+        self.__canvas.draw()

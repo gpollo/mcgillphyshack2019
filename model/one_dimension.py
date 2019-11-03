@@ -83,11 +83,13 @@ class OneDimensionalModel(object):
 
 
     def split_branches(self,w,modes):
+
         w_branches = [np.array([]) for i in range(self.n)]
         f_branches = [np.array([]) for i in range(self.n)]
         for i in range(self.n):
             w_branches[i] = np.array([ f[i] for f in w ])
             f_branches[i] = np.array([ f[i] for f in modes ])
+
         return w_branches, np.array(f_branches)
 
 
@@ -102,11 +104,15 @@ class OneDimensionalModel(object):
 
     def compute_displacement(self,modes,w_branches,w,k,t):
         if self.n !=1:
+            print('modes')
+            print(modes)
+            print()
+            print('w')
+            print(w_branches)
+            print()
             phase,ampl = self.compute_amplitude_and_phase(modes)
             print(phase)
             print(ampl)
-            print(w)
-            print(k)
 
             for i in range(self.n):
                 if w in w_branches[i]:
@@ -115,10 +121,8 @@ class OneDimensionalModel(object):
                 else:
                     pass
 
-            print(phase[branch_index])
-            print(ampl[branch_index])
-            phases_diff = phase[branch_index][0][0][k_index]
-            ampl_rel = ampl[branch_index][0][0][k_index]
+            phases_diff = phase[branch_index][k_index]
+            ampl_rel = ampl[branch_index][k_index]
 
             #
             phase = np.array([j*i for j in np.ones(self.num_cells) for i in phases_diff])
@@ -179,7 +183,7 @@ class OneDimensionalModelWrapper(AbstractModel):
         points = set(self._points)
         for (x, y) in points:
             vecs.append(self.__system.compute_displacement(
-                self.__modes,
+                self.__f_b,
                 self.__w_b,
                 y, x, time
             ))
@@ -244,7 +248,7 @@ class OneDimensionalModelWrapper2(AbstractModel):
         points = set(self._points)
         for (x, y) in points:
             vecs.append(self.__system.compute_displacement(
-                self.__modes,
+                self.__f_b,
                 self.__w_b,
                 y, x, time
             ))

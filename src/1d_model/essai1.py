@@ -33,6 +33,9 @@ w_b,f_b = system.split_branches(w,modes)
 
 phase,ampl = system.compute_amplitude_and_phase(f_b)
 
+print(phase[0])
+print(phase[1])
+
 print(phase)
 print(ampl)
 

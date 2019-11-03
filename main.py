@@ -32,6 +32,8 @@ class MainWindow(QWidget):
             OneDimensionalModelWrapper3(),
             TwoDimensionalModelWrapper(),
         ]
+        for model in self.__models:
+            model.model_changing_callback = self.model_changing
 
         self.__model_plot = PlotWidget()
         self.__model_label = QLabel("Model")
@@ -72,13 +74,21 @@ class MainWindow(QWidget):
         for model in self.__models:
             self.__model_selector.addItem(model.get_name())
 
+    def model_changing(self, model, changing):
+        if changing:
+            self.__game.set_model(None)
+        else:
+            self.__game.set_model(self.__model)
+
     def model_changed(self, index):
+        self.__game.stop()
         model = self.__models[index]
         model.clear_points()
         self.__model = model
         self.__model_plot.set_model(model)
         self.__model.set_amplitude_factor(self.__amplitude_slider.value() / 100)
         self.__game.set_model(model)
+        self.__game.restart()
 
     def amplitude_changed(self, value):
         if self.__model is None:

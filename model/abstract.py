@@ -10,6 +10,8 @@ class AbstractModel(object):
             (int(c[0]*255), int(c[1]*255), int(c[2]*255))
             for c in cm.rainbow(linspace(0, 1, 10))
         ]
+        self.__model_changing_count = 0
+        self.__model_changing_callback = None
 
     def get_colors(self):
         return self.__colors
@@ -66,3 +68,12 @@ class AbstractModel(object):
 
     def draw(self, surface, time):
         raise NotImplementedError
+
+    def model_changing_push(self):
+        self.__model_changing_count += 1
+        self.__model_changing_callback(self, True)
+
+    def model_changing_pop(self):
+        self.__model_changing_count -= 1
+        if self.__model_changing_count == 0:
+            self.__model_changing_callback(self, False)

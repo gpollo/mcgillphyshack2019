@@ -168,6 +168,9 @@ class OneDimensionalModelWrapper(AbstractModel):
     def get_series(self):
         return [(self.__system.k_vec, self.__w_b[0])]
 
+    def get_r(self):
+        return self.__system.r
+
     def draw(self, surface, time):
         (w, h) = surface.get_size()
 

@@ -6,7 +6,7 @@ from pygame import init as pygame_init
 
 from PyQt5.QtWidgets import QWidget, QApplication, QSplitter, QLabel
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QComboBox
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtCore import Qt
 
 from model.one_dimension import OneDimensionalModelWrapper
 
@@ -18,7 +18,6 @@ class MainWindow(QWidget):
         self.__widget_game = GameWidget(game)
         game.start(self.__widget_game)
 
-        self.__selected_model = None
         self.__models = [
             OneDimensionalModelWrapper(),
             OneDimensionalModelWrapper(),
@@ -29,8 +28,6 @@ class MainWindow(QWidget):
         self.__widget_model.currentIndexChanged.connect(self.model_changed)
         for model in self.__models:
             self.__widget_model.addItem(model.get_name())
-        self.__widget_plot.point_selected.connect(self.point_selected)
-        self.__widget_plot.point_unselected.connect(self.point_unselected)
 
         self.__layout_vertical = QVBoxLayout(self)
         self.__layout_vertical.addWidget(self.__widget_model)
@@ -47,19 +44,10 @@ class MainWindow(QWidget):
         self.setLayout(self.__layout)
 
     def model_changed(self, index):
-        self.__selected_model = self.__models[index]
-        self.__widget_plot.set_data_series(self.__selected_model.get_series())
-        self.__game.set_model(self.__selected_model)
-
-    def point_selected(self, x, y):
-        if self.__selected_model is None:
-            return
-        self.__selected_model.add_point((x, y))
-
-    def point_unselected(self, x, y):
-        if self.__selected_model is None:
-            return
-        self.__selected_model.remove_point((x, y))
+        model = self.__models[index]
+        model.clear_points()
+        self.__widget_plot.set_model(model)
+        self.__game.set_model(model)
 
 pygame_init()
 game = Game()

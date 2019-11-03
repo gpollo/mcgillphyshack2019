@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QComboBox
 from PyQt5.QtCore import Qt
 
 from model.one_dimension import OneDimensionalModelWrapper
+from model.one_dimension import OneDimensionalModelWrapper2
 
 class MainWindow(QWidget):
     def __init__(self, game):
@@ -20,7 +21,7 @@ class MainWindow(QWidget):
 
         self.__models = [
             OneDimensionalModelWrapper(),
-            OneDimensionalModelWrapper(),
+            OneDimensionalModelWrapper2(),
             OneDimensionalModelWrapper(),
         ]
         self.__widget_plot = PlotWidget()

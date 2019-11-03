@@ -83,11 +83,13 @@ class OneDimensionalModel(object):
 
 
     def split_branches(self,w,modes):
+
         w_branches = [np.array([]) for i in range(self.n)]
         f_branches = [np.array([]) for i in range(self.n)]
         for i in range(self.n):
             w_branches[i] = np.array([ f[i] for f in w ])
             f_branches[i] = np.array([ f[i] for f in modes ])
+
         return w_branches, np.array(f_branches)
 
 
@@ -103,10 +105,6 @@ class OneDimensionalModel(object):
     def compute_displacement(self,modes,w_branches,w,k,t):
         if self.n !=1:
             phase,ampl = self.compute_amplitude_and_phase(modes)
-            print(phase)
-            print(ampl)
-            print(w)
-            print(k)
 
             for i in range(self.n):
                 if w in w_branches[i]:
@@ -115,10 +113,8 @@ class OneDimensionalModel(object):
                 else:
                     pass
 
-            print(phase[branch_index])
-            print(ampl[branch_index])
-            phases_diff = phase[branch_index][0][0][k_index]
-            ampl_rel = ampl[branch_index][0][0][k_index]
+            phases_diff = phase[branch_index][k_index]
+            ampl_rel = ampl[branch_index][k_index]
 
             #
             phase = np.array([j*i for j in np.ones(self.num_cells) for i in phases_diff])
@@ -182,7 +178,7 @@ class OneDimensionalModelWrapper(AbstractModel):
         points = set(self._points)
         for (x, y) in points:
             vecs.append(self.__system.compute_displacement(
-                self.__modes,
+                self.__f_b,
                 self.__w_b,
                 y, x, time
             ))
@@ -195,6 +191,78 @@ class OneDimensionalModelWrapper(AbstractModel):
             r = int(spacing/4)
             c = int(0)
             color = (127, 142, 201)
+
+            pygame.gfxdraw.aacircle(surface, x, y, r, color)
+            pygame.gfxdraw.filled_circle(surface, x, y, r, color)
+
+class OneDimensionalModelWrapper2(AbstractModel):
+    def __init__(self):
+        super(OneDimensionalModelWrapper2, self).__init__()
+
+        n = 2
+        a = 1
+        m = 1
+        M = 2
+        k0 = 1
+
+        spacing_vec = [a,a,a,a]
+        delta_r_vec = [-a/2,a/2]
+        masse_vec = [m, M]
+        k_vec = [k0,k0,k0,k0]
+        self.__num_cells = 21
+
+        self.__system = OneDimensionalModel(
+            n,
+            spacing_vec,
+            delta_r_vec,
+            masse_vec,
+            k_vec,
+            self.__num_cells
+        )
+        w,self.__modes = self.__system.compute_all_1ZB()
+
+        self.__w_b, self.__f_b = self.__system.split_branches(w, self.__modes)
+
+    def get_name(self):
+        return "One Dimensional 2"
+
+    def get_series(self):
+        return [
+            (self.__system.k_vec, self.__w_b[0]),
+            (self.__system.k_vec, self.__w_b[1])
+        ]
+
+    def get_r(self):
+        return self.__system.r
+
+    def draw(self, surface, time):
+        (w, h) = surface.get_size()
+
+        spacing = w / (self.__num_cells + 1)
+        start = spacing / 2
+        middle = h / 2
+
+        vecs = []
+        points = set(self._points)
+        for (x, y) in points:
+            vecs.append(self.__system.compute_displacement(
+                self.__f_b,
+                self.__w_b,
+                y, x, time
+            ))
+
+        for i in range(self.__num_cells):
+            displacement = sum(vec[i] for vec in vecs)
+
+            x = int(start + spacing * i + 2 * displacement * spacing)
+            y = int(middle)
+            r = int(spacing/4)
+            c = int(0)
+
+            if i % 2 == 0:
+                color = (127, 142, 201)
+            else:
+                color = (127, 201, 142)
 
             pygame.gfxdraw.aacircle(surface, x, y, r, color)
             pygame.gfxdraw.filled_circle(surface, x, y, r, color)

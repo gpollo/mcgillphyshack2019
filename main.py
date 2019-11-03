@@ -10,6 +10,7 @@ from PyQt5.QtCore import Qt
 
 from model.one_dimension import OneDimensionalModelWrapper
 from model.one_dimension import OneDimensionalModelWrapper2
+from model.one_dimension import OneDimensionalModelWrapper3
 
 class MainWindow(QWidget):
     def __init__(self, game):
@@ -27,11 +28,10 @@ class MainWindow(QWidget):
         self.__models = [
             OneDimensionalModelWrapper(),
             OneDimensionalModelWrapper2(),
-            OneDimensionalModelWrapper(),
+            OneDimensionalModelWrapper3(),
         ]
 
         self.__model_plot = PlotWidget()
-
         self.__model_label = QLabel("Model")
         self.__model_selector = QComboBox(self)
 

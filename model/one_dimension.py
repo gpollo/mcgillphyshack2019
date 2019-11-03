@@ -252,13 +252,41 @@ class OneDimensionalModelWrapper2(AbstractOneDimensionalModelWrapper):
         return 2
 
     def get_spacing_vector(self):
-        return [self.a, self.a, self.a, self.a]
+        return [self.a, self.a, self.a]
 
     def get_delta_r_vector(self):
         return [-self.a/2, self.a/2]
 
     def get_mass_vector(self):
         return [self.m, 2 * self.m]
+
+    def get_k_vector(self):
+        return [self.k0, self.k0, self.k0]
+
+    def get_cell_count(self):
+        return 21
+
+    def get_series(self):
+        return [
+            (self.get_system().k_vec, self.w_b[0]),
+            (self.get_system().k_vec, self.w_b[1])
+        ]
+
+class OneDimensionalModelWrapper3(AbstractOneDimensionalModelWrapper):
+    def get_name(self):
+        return "One Dimensional 3"
+
+    def get_atom_count(self):
+        return 3
+
+    def get_spacing_vector(self):
+        return [self.a, self.a, self.a, self.a]
+
+    def get_delta_r_vector(self):
+        return [-self.a, 0, self.a]
+
+    def get_mass_vector(self):
+        return [self.m, 2 * self.m, 3 * self.m]
 
     def get_k_vector(self):
         return [self.k0, self.k0, self.k0, self.k0]
@@ -269,5 +297,6 @@ class OneDimensionalModelWrapper2(AbstractOneDimensionalModelWrapper):
     def get_series(self):
         return [
             (self.get_system().k_vec, self.w_b[0]),
-            (self.get_system().k_vec, self.w_b[1])
+            (self.get_system().k_vec, self.w_b[1]),
+            (self.get_system().k_vec, self.w_b[2])
         ]

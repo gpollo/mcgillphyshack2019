@@ -4,6 +4,7 @@ from numpy import linspace
 class AbstractModel(object):
     def __init__(self):
         self._points = set()
+        self._indices = set()
         self.__amplitude_factor = 1
         self.__colors = [
             (int(c[0]*255), int(c[1]*255), int(c[2]*255))
@@ -14,6 +15,9 @@ class AbstractModel(object):
         return self.__colors
 
     def get_name(self):
+        raise NotImplementedError
+
+    def get_config_widgets(self):
         raise NotImplementedError
 
     def get_series(self):
@@ -28,12 +32,18 @@ class AbstractModel(object):
     def get_amplitude_factor(self):
         return self.__amplitude_factor
 
-    def add_point(self, p):
+    def add_point(self, i, p):
         self._points.add(p)
+        self._indices.add(i)
 
-    def remove_point(self, p):
+    def remove_point(self, i, p):
         try:
             self._points.remove(p)
+        except KeyError:
+            pass
+
+        try:
+            self._indices.remove(i)
         except KeyError:
             pass
 

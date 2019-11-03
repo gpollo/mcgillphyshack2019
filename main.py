@@ -8,9 +8,10 @@ from PyQt5.QtWidgets import QWidget, QApplication, QSplitter, QLabel, QGridLayou
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QComboBox, QGroupBox, QSlider
 from PyQt5.QtCore import Qt
 
-from model.one_dimension import OneDimensionalModelWrapper
+from model.one_dimension import OneDimensionalModelWrapper1
 from model.one_dimension import OneDimensionalModelWrapper2
 from model.one_dimension import OneDimensionalModelWrapper3
+from model.two_dimensions import TwoDimensionalModelWrapper
 
 class MainWindow(QWidget):
     def __init__(self, game):
@@ -26,9 +27,10 @@ class MainWindow(QWidget):
         game.start(self.__game_widget)
 
         self.__models = [
-            OneDimensionalModelWrapper(),
+            OneDimensionalModelWrapper1(),
             OneDimensionalModelWrapper2(),
             OneDimensionalModelWrapper3(),
+            TwoDimensionalModelWrapper(),
         ]
 
         self.__model_plot = PlotWidget()

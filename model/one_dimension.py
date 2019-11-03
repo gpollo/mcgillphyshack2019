@@ -162,6 +162,9 @@ class AbstractOneDimensionalModelWrapper(AbstractModel):
     def get_name(self):
         raise NotImplementedError
 
+    def get_config_widgets(self):
+        return []
+
     def get_atom_count(self):
         raise NotImplementedError
 
@@ -219,9 +222,73 @@ class AbstractOneDimensionalModelWrapper(AbstractModel):
             pygame.gfxdraw.aacircle(surface, x, y, r, color)
             pygame.gfxdraw.filled_circle(surface, x, y, r, color)
 
+from PyQt5.QtWidgets import QLabel, QSlider
 class OneDimensionalModelWrapper(AbstractOneDimensionalModelWrapper):
+    def __init__(self):
+        super(OneDimensionalModelWrapper, self).__init__(self)
+
+        self.__atom_count        = 1
+        self.__atom_count_label  = QLabel("Atom Count")
+        self.__atom_count_slider = QSlider()
+        self.__atom_count_slider.setMinimum(1)
+        self.__atom_count_slider.setMaximum(5)
+        self.__cell_count        = 20
+        self.__cell_count_label  = QLabel("Cell Count")
+        self.__cell_count_slider = QSlider()
+        self.__cell_count_slider.setMinimum(1)
+        self.__cell_count_slider.setMaximum(30)
+
+        #self.__atom_count_slider.valueChanged.connect(
+
+    def atom_count_changed(self, value):
+        self.__atom_count = value
+
+    def cell_count_changed(self, value):
+        self.__cell_count = value
+
     def get_name(self):
-        return "One Dimensional"
+        return "One Dimensional (Custom)"
+
+    def get_config_widgets(self):
+        return [
+            self.__atom_count_label,
+            self.__atom_count_slider,
+            self.__cell_count_label,
+            self.__cell_count_slider,
+        ]
+
+    def get_atom_count(self):
+        return self.__atom_count
+
+    def get_spacing_vector(self):
+        return [self.a] * (self.__atom_count + 1)
+
+    def get_delta_r_vector(self):
+        atom_count = self.get_atom_count()
+        if self.get_atom_count() % 2 == 0:
+            step = (2*self.a)/(atom_count+1)
+        else:
+            step = (2*self.a)/(atom_count-1) if atom_count != 1 else 0
+        return [0] # TODO
+
+    def get_mass_vector(self):
+        return [self.m] * (self.__atom_count)
+
+    def get_k_vector(self):
+        return [self.k0] * (self.__atom_count + 1)
+
+    def get_cell_count(self):
+        return self.__cell_count
+
+    def get_series(self):
+        return [
+            (self.get_system().k_vec, self.w_b[i])
+            for i in range(self.__atom_count)
+        ]
+
+class OneDimensionalModelWrapper1(AbstractOneDimensionalModelWrapper):
+    def get_name(self):
+        return "One Dimensional 1"
 
     def get_atom_count(self):
         return 1

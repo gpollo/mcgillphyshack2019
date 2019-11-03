@@ -119,7 +119,7 @@ class PlotWidget(QWidget):
             line = self.__axes.scatter(x, y)
             self.__lines.append(line)
 
-        self.__axes.set_xlim(-pi / model.get_r(), pi / model.get_r())
+        #self.__axes.set_xlim(-pi / model.get_r(), pi / model.get_r())
         self.__axes.set_xticks([-pi / model.get_r(), 0, pi / model.get_r()])
         self.__axes.set_xticklabels([
             r"$-\displaystyle\frac{\pi}{r}$",
@@ -130,34 +130,36 @@ class PlotWidget(QWidget):
         self.__mapper = LineMapper(model.get_series())
         self.__canvas.draw()
 
-    def __select_point(self, point):
-        if point in self.__selected_points:
+    def __select_point(self, index, point):
+        if (index, point) in self.__selected_points:
             return
 
         (x, y) = point
-        self.__selected_points[point] = self.__axes.scatter([x], [y], marker='o', s=50, color="blue")
-        self.__model.add_point(point)
+        self.__selected_points[(index, point)] = self.__axes.scatter(
+            [x], [y], marker='o', s=50, color="blue"
+        )
+        self.__model.add_point(index, point)
         self.__canvas.draw()
 
-    def __unselect_point(self, point):
-        if point not in self.__selected_points:
+    def __unselect_point(self, index, point):
+        if (index, point) not in self.__selected_points:
             return
 
-        self.__selected_points[point].remove()
-        del self.__selected_points[point]
-        self.__model.remove_point(point)
+        self.__selected_points[(index, point)].remove()
+        del self.__selected_points[(index, point)]
+        self.__model.remove_point(index, point)
         self.__canvas.draw()
 
     def __clear_selection(self):
         points = dict(self.__selected_points)
-        for point in points:
-            self.__unselect_point(point)
+        for (index, point) in points:
+            self.__unselect_point(index, point)
 
-    def __toggle_point(self, point):
-        if point not in self.__selected_points:
-            self.__select_point(point)
+    def __toggle_point(self, index, point):
+        if (index, point) not in self.__selected_points:
+            self.__select_point(index, point)
         else:
-            self.__unselect_point(point)
+            self.__unselect_point(index, point)
 
     def __remove_hovered_point(self, draw=True):
         if self.__hovered_point is not None:
@@ -174,31 +176,31 @@ class PlotWidget(QWidget):
 
     def __get_point_from_event(self, event):
         if self.__mapper is None:
-            return
+            return (None, None)
 
         (x, y) = (event.xdata, event.ydata)
         if x is None or y is None:
-            return None
+            return (None, None)
 
         point = self.__mapper.get_closests(x, y, radius=1)
         if point is None:
-            return None
+            return (None, None)
 
-        (_, _, x, y) = point[0]
-        return (x, y)
+        (_, index, x, y) = point[0]
+        return (index, (x, y))
 
     def __on_button_press(self, event):
-        point = self.__get_point_from_event(event)
+        (index, point) = self.__get_point_from_event(event)
         if point is None:
             return
 
-        self.__toggle_point(point)
+        self.__toggle_point(index, point)
 
     def __on_figure_leave(self, event):
         self.__remove_hovered_point()       
 
     def __on_motion_notify(self, event):
-        point = self.__get_point_from_event(event)
+        (_, point) = self.__get_point_from_event(event)
         if point is None:
             self.__remove_hovered_point()
             return

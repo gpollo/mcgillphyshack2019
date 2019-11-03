@@ -101,24 +101,34 @@ class OneDimensionalModel(object):
 
 
     def compute_displacement(self,modes,w_branches,w,k,t):
-        phase,ampl = self.compute_amplitude_and_phase(modes)
+        if self.n !=1:
+            phase,ampl = self.compute_amplitude_and_phase(modes)
+            print(phase)
+            print(ampl)
+            print(w)
+            print(k)
 
-        for i in range(self.n):
-            if w in w_branches[i]:
-                branch_index = i
-                k_index = np.where(w_branches[i] == w)[0][0]
-            else:
-                pass
+            for i in range(self.n):
+                if w in w_branches[i]:
+                    branch_index = i
+                    k_index = np.where(w_branches[i] == w)[0][0]
+                else:
+                    pass
 
-        phases_diff = phase[branch_index][k_index]
-        ampl = ampl[branch_index][k_index]
+            print(phase[branch_index])
+            print(ampl[branch_index])
+            phases_diff = phase[branch_index][0][0][k_index]
+            ampl_rel = ampl[branch_index][0][0][k_index]
 
-        #
-        phase = np.array([j*i for j in np.ones(self.num_cells) for i in phases_diff])
-        amplitude = np.array([j*i for j in np.ones(self.num_cells) for i in ampl])
+            #
+            phase = np.array([j*i for j in np.ones(self.num_cells) for i in phases_diff])
+            amplitude = np.array([j*i for j in np.ones(self.num_cells) for i in ampl_rel])
 
-        #
-        displacement = amplitude * np.sin( k*self.position_vec - w*t*np.ones(self.num_atoms) + phase )
+            #
+            displacement = amplitude * np.sin( k*self.position_vec - w*t*np.ones(self.num_atoms) + phase )
+
+        else:
+            displacement = 0.1* np.sin( k*self.position_vec - w*t*np.ones(self.num_atoms) )
 
         return displacement
 

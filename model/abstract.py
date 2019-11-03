@@ -35,6 +35,9 @@ class AbstractModel(object):
     def get_x_ticklabels(self):
         raise NotImplementedError
 
+    def get_vertical_lines(self):
+        raise NotImplementedError
+
     def set_amplitude_factor(self, value):
         self.__amplitude_factor = value
 

@@ -284,6 +284,9 @@ class TwoDimensionalModelWrapper(AbstractModel):
             r"$\Gamma$"
         ]
 
+    def get_vertical_lines(self):
+        return self.get_x_ticks()
+
     def draw(self, surface, time):
         (w, h) = surface.get_size()
 

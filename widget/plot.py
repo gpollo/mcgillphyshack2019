@@ -115,11 +115,12 @@ class PlotWidget(QWidget):
             line.remove()
         self.__lines.clear()
 
-        for (x, y) in model.get_series():
-            line = self.__axes.scatter(x, y)
-            self.__lines.append(line)
+        for line in model.get_vertical_lines():
+            self.__axes.axvline(x=line, color="black", linewidth=0.8, zorder=0)
 
-        print(*model.get_x_limits())
+        for (x, y) in model.get_series():
+            line = self.__axes.scatter(x, y, zorder=1)
+            self.__lines.append(line)
 
         self.__axes.set_xlim(*model.get_x_limits())
         self.__axes.set_xticks(model.get_x_ticks())

@@ -203,6 +203,9 @@ class AbstractOneDimensionalModelWrapper(AbstractModel):
             r"$\displaystyle\frac{\pi}{r}$"
         ]
 
+    def get_vertical_lines(self):
+        return []
+
     def get_system(self):
         return self.__system
 

@@ -59,16 +59,6 @@ class one_dimensional_model(object):
                             elif j==1:
                                 K[i,1] = K[i,1] + self.k * abs(r[j])/(r[0]**2+r[1]**2)**2
 
-
-        #K = np.array([[ 0.,    0.,   -1.,    -1/np.sqrt(2),   -1.,    -1/np.sqrt(2),    -1/np.sqrt(2),     0.,    -1/np.sqrt(2),    0.,   -0.25, -0.25, -0.25, -0.25, -0.25, -0.25, -0.25, -0.25],
-        #              [ 0.,    0.,    0.,    -1/np.sqrt(2),    0.,    -1/np.sqrt(2),    -1/np.sqrt(2),    -1.,    -1/np.sqrt(2),   -1.,   -0.25, -0.25, -0.25, -0.25, -0.25, -0.25, -0.25, -0.25]])
-
-        #K = np.array([[ 0.,    0.,   -1.,    -1,   -1.,    -1,    -1,     0.,    -1,    0.,   -0.25, -0.25, -0.25, -0.25, -0.25, -0.25, -0.25, -0.25],
-        #              [ 0.,    0.,    0.,    -1,    0.,    -1,    -1,    -1.,    -1,   -1.,   -0.25, -0.25, -0.25, -0.25, -0.25, -0.25, -0.25, -0.25]])
-        # ii) Self-interaction (acoustic sum rule)
-        #for i in range(2):
-        #    K[i, i] = -sum(K[i,:])
-
         #Save K
         self.K_matrix = K
         print(K)
@@ -167,13 +157,9 @@ class one_dimensional_model(object):
 
         #
         phase = np.ones(self.num_cells_x*self.num_cells_y) * phases_diff
-        amplitude_x = ampl[0] * np.ones(self.num_cells_x*self.num_cells_y)
-        amplitude_y = ampl[1] * np.ones(self.num_cells_x*self.num_cells_y)
-
-        np.array([j*i for j in np.ones(self.num_cells) for i in ampl])
 
         #
-        displacement_x = ampl[0] * np.sin( np.dot(k*self.position_vec) - w*t*np.ones(self.num_cells_x*self.num_cells_y)  )
-        displacement_y = ampl[1] * np.sin( np.dot(k*self.position_vec) - w*t*np.ones(self.num_cells_x*self.num_cells_y) + phase )
+        displacement_x = ampl[0] * np.sin( np.dot(k,self.position_vec) - w*t*np.ones(self.num_cells_x*self.num_cells_y)  )
+        displacement_y = ampl[1] * np.sin( np.dot(k,self.position_vec) - w*t*np.ones(self.num_cells_x*self.num_cells_y) + phase )
 
         return (displacement_x, displacement_y)

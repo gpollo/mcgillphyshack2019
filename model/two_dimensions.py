@@ -174,19 +174,35 @@ class one_dimensional_model(object):
         return (displacement_x, displacement_y)
 
 from model.abstract import AbstractModel
+from PyQt5.QtWidgets import QLabel, QSlider
+from PyQt5.QtCore import Qt
 import pygame
 import pygame.gfxdraw
 
 class TwoDimensionalModelWrapper(AbstractModel):
     def __init__(self):
+        self.__atom_count = 21
+        self.__atom_count_label  = QLabel("Atom Count")
+        self.__atom_count_slider = QSlider(Qt.Horizontal)
+        self.__atom_count_slider.setMinimum(4)
+        self.__atom_count_slider.setMaximum(25)
+
         super(TwoDimensionalModelWrapper, self).__init__()
 
+        self.__atom_count_slider.valueChanged.connect(self.atom_count_changed)
+        self.__atom_count_slider.setValue(21)
+
+    def atom_count_changed(self, value):
+        self.__atom_count = value
+        self.recalculate_model()
+
+    def __calculate_model(self):
         self.a = 1
         self.vec_base = [np.array([self.a, 0]), np.array([0, self.a])]
         self.mass = 1
         self.k = 1
-        self.num_cells_x = 21
-        self.num_cells_y = 21
+        self.num_cells_x = self.__atom_count
+        self.num_cells_y = self.__atom_count
 
         self.system = one_dimensional_model(
             self.vec_base,
@@ -248,11 +264,20 @@ class TwoDimensionalModelWrapper(AbstractModel):
             )
         ]
 
+    def recalculate_model(self):
+        self.model_changing_push()
+        self.__calculate_model()
+        self.model_changing_pop()
+
     def get_name(self):
-        return "2 dimensional"
+        return "Two Dimensional"
 
     def get_config_widgets(self):
-        return []
+        others = super(TwoDimensionalModelWrapper, self).get_config_widgets()
+        return others + [
+            self.__atom_count_label,
+            self.__atom_count_slider,
+        ]
 
     def get_series(self):
         return self.__series
@@ -290,11 +315,21 @@ class TwoDimensionalModelWrapper(AbstractModel):
     def draw(self, surface, time):
         (w, h) = surface.get_size()
 
-        spacing_x = w / (self.num_cells_x + 1)
-        spacing_y = h / (self.num_cells_y + 1)
+        offset_x = 0
+        offset_y = 0
+        if w < h:
+            offset_y = (h - w) / 2
+            h = w
+        else:
+            offset_x = (w - h) / 2
+            w = h
 
-        start_x = spacing_x / 2
-        start_y = spacing_y / 2
+        margin = (w + h) * 0.05
+        spacing_x = (w - 2 * margin) / (self.num_cells_x + 1)
+        spacing_y = (h - 2 * margin) / (self.num_cells_y + 1)
+
+        start_x = margin + spacing_x / 2
+        start_y = margin + spacing_y / 2
 
         displacement_vectors_x = []
         displacement_vectors_y = []
@@ -318,6 +353,9 @@ class TwoDimensionalModelWrapper(AbstractModel):
                 y = int(start_x + spacing_y * j + 2 * displacement_y * spacing_y * self.get_amplitude_factor())
                 r = int((spacing_x + spacing_y) / 6)
                 color = self.get_colors()[0]
+
+                x = int(x + offset_x)
+                y = int(y + offset_y)
 
                 pygame.gfxdraw.aacircle(surface, x, y, r, color)
                 pygame.gfxdraw.filled_circle(surface, x, y, r, color)

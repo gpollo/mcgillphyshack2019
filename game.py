@@ -10,7 +10,6 @@ class Game(object):
         self.__model = None
         self.__running = False
         self.__surface = pygame.Surface((400, 400), pygame.SRCALPHA, 32)
-        self.__thread = Thread(target=self.game_loop)
     
     def get_surface(self):
         return self.__surface
@@ -25,6 +24,16 @@ class Game(object):
 
         self.__canvas = canvas
         self.__running = True
+        self.__thread = Thread(target=self.game_loop)
+        self.__thread.start()
+
+    def restart(self):
+        if self.__running:
+            print("game thread is already running")
+            return
+
+        self.__running = True
+        self.__thread = Thread(target=self.game_loop)
         self.__thread.start()
 
     def game_loop(self):

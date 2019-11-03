@@ -7,8 +7,8 @@ from math import sqrt
 from numpy import pi
 
 rcParams["text.usetex"] = True
-rcParams["font.family"] = "sans-serif"
-rcParams["font.sans-serif"] = "Tahoma"
+rcParams["font.family"] = "serif"
+rcParams["font.weight"] = "bold"
 rcParams["text.latex.preamble"] = [
     "\\usepackage[utf8]{inputenc}",
     "\\usepackage{amsmath}"
@@ -115,6 +115,8 @@ class PlotWidget(QWidget):
             line.remove()
         self.__lines.clear()
 
+        while len(self.__axes.lines):
+            self.__axes.lines[-1].remove()
         for line in model.get_vertical_lines():
             self.__axes.axvline(x=line, color="black", linewidth=0.8, zorder=0)
 

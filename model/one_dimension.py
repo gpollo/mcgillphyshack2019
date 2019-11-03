@@ -135,7 +135,9 @@ import pygame.gfxdraw
 class AbstractOneDimensionalModelWrapper(AbstractModel):
     def __init__(self):
         super(AbstractOneDimensionalModelWrapper, self).__init__()
+        self.__calculate_model()
 
+    def __calculate_model(self):
         self.a = 1
         self.m = 1
         self.k0 = 1
@@ -159,11 +161,16 @@ class AbstractOneDimensionalModelWrapper(AbstractModel):
         self.w, self.modes = self.__system.compute_all_1ZB()
         self.w_b, self.f_b = self.__system.split_branches(self.w, self.modes)
 
+    def recalculate_model(self):
+        self.model_changing_push()
+        self.__calculate_model()
+        self.model_changing_pop()
+
     def get_name(self):
         raise NotImplementedError
 
     def get_config_widgets(self):
-        return []
+        return super(AbstractOneDimensionalModelWrapper, self).get_config_widgets()
 
     def get_atom_count(self):
         raise NotImplementedError
@@ -215,8 +222,9 @@ class AbstractOneDimensionalModelWrapper(AbstractModel):
     def draw(self, surface, time):
         (w, h) = surface.get_size()
 
-        spacing = w / (self.get_cell_count() + 1)
-        start = spacing / 2
+        margin = w * 0.05
+        spacing = (w - 2 * margin) / (self.get_cell_count() + 1)
+        start = margin + spacing / 2
         middle = h / 2
 
         vectors = []
@@ -243,34 +251,43 @@ class AbstractOneDimensionalModelWrapper(AbstractModel):
             pygame.gfxdraw.filled_circle(surface, x, y, r, color)
 
 from PyQt5.QtWidgets import QLabel, QSlider
+from PyQt5.QtCore import Qt
 class OneDimensionalModelWrapper(AbstractOneDimensionalModelWrapper):
     def __init__(self):
-        super(OneDimensionalModelWrapper, self).__init__(self)
-
         self.__atom_count        = 1
         self.__atom_count_label  = QLabel("Atom Count")
-        self.__atom_count_slider = QSlider()
+        self.__atom_count_slider = QSlider(Qt.Horizontal)
         self.__atom_count_slider.setMinimum(1)
-        self.__atom_count_slider.setMaximum(5)
+        self.__atom_count_slider.setMaximum(10)
+
         self.__cell_count        = 20
         self.__cell_count_label  = QLabel("Cell Count")
-        self.__cell_count_slider = QSlider()
+        self.__cell_count_slider = QSlider(Qt.Horizontal)
         self.__cell_count_slider.setMinimum(1)
         self.__cell_count_slider.setMaximum(30)
 
-        #self.__atom_count_slider.valueChanged.connect(
+        super(OneDimensionalModelWrapper, self).__init__()
+
+        self.__atom_count_slider.valueChanged.connect(self.atom_count_changed)
+        self.__atom_count_slider.setValue(2)
+
+        self.__cell_count_slider.valueChanged.connect(self.cell_count_changed)
+        self.__cell_count_slider.setValue(10)
 
     def atom_count_changed(self, value):
         self.__atom_count = value
+        self.recalculate_model()
 
     def cell_count_changed(self, value):
         self.__cell_count = value
+        self.recalculate_model()
 
     def get_name(self):
         return "One Dimensional (Custom)"
 
     def get_config_widgets(self):
-        return [
+        others = super(OneDimensionalModelWrapper, self).get_config_widgets()
+        return others + [
             self.__atom_count_label,
             self.__atom_count_slider,
             self.__cell_count_label,
@@ -286,10 +303,12 @@ class OneDimensionalModelWrapper(AbstractOneDimensionalModelWrapper):
     def get_delta_r_vector(self):
         atom_count = self.get_atom_count()
         if self.get_atom_count() % 2 == 0:
-            step = (2*self.a)/(atom_count+1)
+            step = (2*self.a) / (atom_count+1)
+            start = (step / 2) - self.a
         else:
-            step = (2*self.a)/(atom_count-1) if atom_count != 1 else 0
-        return [0] # TODO
+            step = (2*self.a) / (atom_count-1) if atom_count != 1 else 0
+            start = -self.a
+        return [start + step * i for i in range(atom_count)]
 
     def get_mass_vector(self):
         return [self.m] * (self.__atom_count)
@@ -308,7 +327,7 @@ class OneDimensionalModelWrapper(AbstractOneDimensionalModelWrapper):
 
 class OneDimensionalModelWrapper1(AbstractOneDimensionalModelWrapper):
     def get_name(self):
-        return "One Dimensional 1"
+        return "One Dimensional (1 atom)"
 
     def get_atom_count(self):
         return 1
@@ -335,7 +354,7 @@ class OneDimensionalModelWrapper1(AbstractOneDimensionalModelWrapper):
 
 class OneDimensionalModelWrapper2(AbstractOneDimensionalModelWrapper):
     def get_name(self):
-        return "One Dimensional 2"
+        return "One Dimensional (2 atom)"
 
     def get_atom_count(self):
         return 2
@@ -363,7 +382,7 @@ class OneDimensionalModelWrapper2(AbstractOneDimensionalModelWrapper):
 
 class OneDimensionalModelWrapper3(AbstractOneDimensionalModelWrapper):
     def get_name(self):
-        return "One Dimensional 3"
+        return "One Dimensional (3 atom)"
 
     def get_atom_count(self):
         return 3

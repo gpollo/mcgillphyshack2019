@@ -222,8 +222,9 @@ class AbstractOneDimensionalModelWrapper(AbstractModel):
     def draw(self, surface, time):
         (w, h) = surface.get_size()
 
-        spacing = w / (self.get_cell_count() + 1)
-        start = spacing / 2
+        margin = w * 0.05
+        spacing = (w - 2 * margin) / (self.get_cell_count() + 1)
+        start = margin + spacing / 2
         middle = h / 2
 
         vectors = []

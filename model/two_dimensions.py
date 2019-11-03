@@ -330,11 +330,12 @@ class TwoDimensionalModelWrapper(AbstractModel):
     def draw(self, surface, time):
         (w, h) = surface.get_size()
 
-        spacing_x = w / (self.num_cells_x + 1)
-        spacing_y = h / (self.num_cells_y + 1)
+        margin = (w + h) * 0.05
+        spacing_x = (w - 2 * margin) / (self.num_cells_x + 1)
+        spacing_y = (h - 2 * margin) / (self.num_cells_y + 1)
 
-        start_x = spacing_x / 2
-        start_y = spacing_y / 2
+        start_x = margin + spacing_x / 2
+        start_y = margin + spacing_y / 2
 
         displacement_vectors_x = []
         displacement_vectors_y = []

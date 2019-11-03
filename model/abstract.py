@@ -75,8 +75,9 @@ class AbstractModel(object):
 
     def clear_points(self):
         points = set(self._points)
-        for p in points:
-            self.remove_point(p)
+        indices = set(self._indices)
+        for (i, p) in zip(indices, points):
+            self.remove_point(i, p)
 
     def draw(self, surface, time):
         raise NotImplementedError

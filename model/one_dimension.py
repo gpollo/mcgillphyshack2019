@@ -131,138 +131,143 @@ class OneDimensionalModel(object):
 from model.abstract import AbstractModel
 import pygame
 import pygame.gfxdraw
-class OneDimensionalModelWrapper(AbstractModel):
+
+class AbstractOneDimensionalModelWrapper(AbstractModel):
     def __init__(self):
-        super(OneDimensionalModelWrapper, self).__init__()
+        super(AbstractOneDimensionalModelWrapper, self).__init__()
 
-        n = 1
-        a = 1
-        m = 1
-        k0 = 1
+        self.a = 1
+        self.m = 1
+        self.k0 = 1
 
-        spacing_vec = [a,a]
-        delta_r_vec = [0]
-        masse_vec = [m]
-        k_vec = [k0,k0]
-        self.__num_cells = 21
+        atom_count     = self.get_atom_count()
+        spacing_vector = self.get_spacing_vector()
+        delta_r_vector = self.get_delta_r_vector()
+        masse_vector   = self.get_mass_vector()
+        k_vector       = self.get_k_vector()
+        cell_count     = self.get_cell_count()
 
         self.__system = OneDimensionalModel(
-            n,
-            spacing_vec,
-            delta_r_vec,
-            masse_vec,
-            k_vec,
-            self.__num_cells
+            atom_count,
+            spacing_vector,
+            delta_r_vector,
+            masse_vector,
+            k_vector,
+            cell_count
         )
-        w,self.__modes = self.__system.compute_all_1ZB()
 
-        self.__w_b, self.__f_b = self.__system.split_branches(w, self.__modes)
+        self.w, self.modes = self.__system.compute_all_1ZB()
+        self.w_b, self.f_b = self.__system.split_branches(self.w, self.modes)
 
+    def get_name(self):
+        raise NotImplementedError
+
+    def get_atom_count(self):
+        raise NotImplementedError
+
+    def get_spacing_vector(self):
+        raise NotImplementedError
+
+    def get_delta_r_vector(self):
+        raise NotImplementedError
+
+    def get_mass_vector(self):
+        raise NotImplementedError
+
+    def get_k_vector(self):
+        raise NotImplementedError
+
+    def get_cell_count(self):
+        raise NotImplementedError
+
+    def get_series(self):
+        raise NotImplementedError
+
+    def get_system(self):
+        return self.__system
+
+    def get_r(self):
+        return self.get_system().r
+
+    def draw(self, surface, time):
+        (w, h) = surface.get_size()
+
+        spacing = w / (self.get_cell_count() + 1)
+        start = spacing / 2
+        middle = h / 2
+
+        vectors = []
+        points = set(self._points)
+        for (x, y) in points:
+            vectors.append(self.__system.compute_displacement(
+                self.f_b,
+                self.w_b,
+                y, x, time
+            ))
+
+        for i in range(self.get_cell_count()):
+            displacement = sum(vector[i] for vector in vectors)
+
+            x = int(start + spacing * i + 2 * displacement * spacing * self.get_amplitude_factor())
+            y = int(middle)
+            r = int(spacing/4)
+            c = int(0)
+
+            color = self.get_colors()[i % len(self.get_mass_vector())]
+            pygame.gfxdraw.aacircle(surface, x, y, r, color)
+            pygame.gfxdraw.filled_circle(surface, x, y, r, color)
+
+class OneDimensionalModelWrapper(AbstractOneDimensionalModelWrapper):
     def get_name(self):
         return "One Dimensional"
 
-    def get_series(self):
-        return [(self.__system.k_vec, self.__w_b[0])]
+    def get_atom_count(self):
+        return 1
 
-    def get_r(self):
-        return self.__system.r
+    def get_spacing_vector(self):
+        return [self.a, self.a]
 
-    def draw(self, surface, time):
-        (w, h) = surface.get_size()
+    def get_delta_r_vector(self):
+        return [0]
 
-        spacing = w / (self.__num_cells + 1)
-        start = spacing / 2
-        middle = h / 2
+    def get_mass_vector(self):
+        return [self.m]
 
-        vecs = []
-        points = set(self._points)
-        for (x, y) in points:
-            vecs.append(self.__system.compute_displacement(
-                self.__f_b,
-                self.__w_b,
-                y, x, time
-            ))
+    def get_k_vector(self):
+        return [self.k0, self.k0]
 
-        for i in range(self.__num_cells):
-            displacement = sum(vec[i] for vec in vecs)
-
-            x = int(start + spacing * i + 2 * displacement * spacing * self.get_amplitude_factor())
-            y = int(middle)
-            r = int(spacing/4)
-            c = int(0)
-            color = (127, 142, 201)
-
-            pygame.gfxdraw.aacircle(surface, x, y, r, color)
-            pygame.gfxdraw.filled_circle(surface, x, y, r, color)
-
-class OneDimensionalModelWrapper2(AbstractModel):
-    def __init__(self):
-        super(OneDimensionalModelWrapper2, self).__init__()
-
-        n = 2
-        a = 1
-        m = 1
-        M = 2
-        k0 = 1
-
-        spacing_vec = [a,a,a,a]
-        delta_r_vec = [-a/2,a/2]
-        masse_vec = [m, M]
-        k_vec = [k0,k0,k0,k0]
-        self.__num_cells = 21
-
-        self.__system = OneDimensionalModel(
-            n,
-            spacing_vec,
-            delta_r_vec,
-            masse_vec,
-            k_vec,
-            self.__num_cells
-        )
-        w,self.__modes = self.__system.compute_all_1ZB()
-
-        self.__w_b, self.__f_b = self.__system.split_branches(w, self.__modes)
-
-    def get_name(self):
-        return "One Dimensional 2"
+    def get_cell_count(self):
+        return 21
 
     def get_series(self):
         return [
-            (self.__system.k_vec, self.__w_b[0]),
-            (self.__system.k_vec, self.__w_b[1])
+            (self.get_system().k_vec, self.w_b[0])
         ]
 
-    def get_r(self):
-        return self.__system.r
+class OneDimensionalModelWrapper2(AbstractOneDimensionalModelWrapper):
+    def get_name(self):
+        return "One Dimensional 2"
 
-    def draw(self, surface, time):
-        (w, h) = surface.get_size()
+    def get_atom_count(self):
+        return 2
 
-        spacing = w / (self.__num_cells + 1)
-        start = spacing / 2
-        middle = h / 2
+    def get_spacing_vector(self):
+        return [self.a, self.a, self.a, self.a]
 
-        vecs = []
-        points = set(self._points)
-        for (x, y) in points:
-            vecs.append(self.__system.compute_displacement(
-                self.__f_b,
-                self.__w_b,
-                y, x, time
-            ))
+    def get_delta_r_vector(self):
+        return [-self.a/2, self.a/2]
 
-        for i in range(self.__num_cells):
-            displacement = sum(vec[i] for vec in vecs)
+    def get_mass_vector(self):
+        return [self.m, 2 * self.m]
 
-            x = int(start + spacing * i + 2 * displacement * spacing * self.get_amplitude_factor())
-            y = int(middle)
-            r = int(spacing/4)
-            c = int(0)
+    def get_k_vector(self):
+        return [self.k0, self.k0, self.k0, self.k0]
 
-            if i % 2 == 0:
-                color = (127, 142, 201)
-            else:
-                color = (127, 201, 142)
+    def get_cell_count(self):
+        return 21
 
-            pygame.gfxdraw.aacircle(surface, x, y, r, color)
-            pygame.gfxdraw.filled_circle(surface, x, y, r, color)
+    def get_series(self):
+        return [
+            (self.get_system().k_vec, self.w_b[0]),
+            (self.get_system().k_vec, self.w_b[1])
+        ]

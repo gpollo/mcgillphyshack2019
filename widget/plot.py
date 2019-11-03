@@ -119,13 +119,11 @@ class PlotWidget(QWidget):
             line = self.__axes.scatter(x, y)
             self.__lines.append(line)
 
-        #self.__axes.set_xlim(-pi / model.get_r(), pi / model.get_r())
-        self.__axes.set_xticks([-pi / model.get_r(), 0, pi / model.get_r()])
-        self.__axes.set_xticklabels([
-            r"$-\displaystyle\frac{\pi}{r}$",
-            r"$0$",
-            r"$\displaystyle\frac{\pi}{r}$"
-        ])
+        print(*model.get_x_limits())
+
+        self.__axes.set_xlim(*model.get_x_limits())
+        self.__axes.set_xticks(model.get_x_ticks())
+        self.__axes.set_xticklabels(model.get_x_ticklabels())
 
         self.__mapper = LineMapper(model.get_series())
         self.__canvas.draw()

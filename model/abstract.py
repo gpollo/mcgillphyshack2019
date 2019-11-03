@@ -26,6 +26,15 @@ class AbstractModel(object):
     def get_r(self):
         raise NotImplementedError
 
+    def get_x_limits(self):
+        raise NotImplementedError
+
+    def get_x_ticks(self):
+        raise NotImplementedError
+
+    def get_x_ticklabels(self):
+        raise NotImplementedError
+
     def set_amplitude_factor(self, value):
         self.__amplitude_factor = value
 

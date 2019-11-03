@@ -71,7 +71,6 @@ class one_dimensional_model(object):
 
         #Save K
         self.K_matrix = K
-        print(K)
 
         #############################################
         # Compute vectors in the first Brillouin zone
@@ -79,7 +78,6 @@ class one_dimensional_model(object):
         index_y = np.linspace(-int(num_cells_y/2), int(num_cells_y/2), num_cells_y)
 
         self.k_vec = np.array([(2*np.pi*i/(num_cells_x*self.a1),(2*np.pi*j/(num_cells_x*self.a2))) for i in index_x for j in index_y])
-        print(self.k_vec)
 
 
     def _compute_eigenfrequencies(self,k):
@@ -240,8 +238,6 @@ class TwoDimensionalModelWrapper(AbstractModel):
             np.concatenate((self.k_0[:,1], self.k_1[:,1], self.k_2[:,1])),
         ]
 
-        print("test", self.k)
-
         self.__series = [
             (
                 np.arange(len(np.concatenate((self.w_b0[0], self.w_b1[0], self.w_b2[0])))),
@@ -264,6 +260,30 @@ class TwoDimensionalModelWrapper(AbstractModel):
     def get_r(self):
         return 1
 
+    def get_x_limits(self):
+        return (
+            np.min(self.__series[0][0]),
+            np.max(self.__series[0][0])
+        )
+
+    def get_x_ticks(self):
+        return [
+            self.__series[0][0][0],
+            self.__series[0][0][int(self.num_cells_x/2)],
+            self.__series[0][0][int(self.num_cells_x)],
+            self.__series[0][0][int(self.num_cells_x)+int(self.num_cells_x/2)],
+            self.__series[0][0][-1]
+        ]
+
+    def get_x_ticklabels(self):
+        return [
+            r"$-X$",
+            r"$\Gamma$",
+            r"$X$",
+            r"$M$",
+            r"$\Gamma$"
+        ]
+
     def draw(self, surface, time):
         (w, h) = surface.get_size()
 
@@ -278,7 +298,6 @@ class TwoDimensionalModelWrapper(AbstractModel):
         indices = set(self._indices)
         points = set(self._points)
         for (i, (_, w)) in zip(indices, points):
-            print(i, len(self.k[0]))
             (displacement_x, displacement_y) = self.system.compute_displacement(
                 self.f_b, self.w_b, w,
                 [self.k[0][i], self.k[1][i]], time
@@ -296,8 +315,6 @@ class TwoDimensionalModelWrapper(AbstractModel):
                 y = int(start_x + spacing_y * j + 2 * displacement_y * spacing_y * self.get_amplitude_factor())
                 r = int((spacing_x + spacing_y) / 6)
                 color = self.get_colors()[0]
-
-                print(x, y)
 
                 pygame.gfxdraw.aacircle(surface, x, y, r, color)
                 pygame.gfxdraw.filled_circle(surface, x, y, r, color)

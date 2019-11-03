@@ -186,6 +186,23 @@ class AbstractOneDimensionalModelWrapper(AbstractModel):
     def get_series(self):
         raise NotImplementedError
 
+    def get_x_limits(self):
+        return (-np.pi / self.get_r(), np.pi / self.get_r())
+
+    def get_x_ticks(self):
+        return [
+            -np.pi / self.get_r(),
+            0,
+            np.pi / self.get_r(),
+        ]
+
+    def get_x_ticklabels(self):
+        return [
+            r"$-\displaystyle\frac{\pi}{r}$",
+            r"$0$",
+            r"$\displaystyle\frac{\pi}{r}$"
+        ]
+
     def get_system(self):
         return self.__system
 

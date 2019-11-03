@@ -195,3 +195,68 @@ class OneDimensionalModelWrapper(AbstractModel):
 
             pygame.gfxdraw.aacircle(surface, x, y, r, color)
             pygame.gfxdraw.filled_circle(surface, x, y, r, color)
+
+class OneDimensionalModelWrapper2(AbstractModel):
+    def __init__(self):
+        super(OneDimensionalModelWrapper2, self).__init__()
+
+        n = 2
+        a = 1
+        m = 1
+        M = 2
+        k0 = 1
+
+        spacing_vec = [a,a,a,a]
+        delta_r_vec = [-a/2,a/2]
+        masse_vec = [m, M]
+        k_vec = [k0,k0,k0,k0]
+        self.__num_cells = 21
+
+        self.__system = OneDimensionalModel(
+            n,
+            spacing_vec,
+            delta_r_vec,
+            masse_vec,
+            k_vec,
+            self.__num_cells
+        )
+        w,self.__modes = self.__system.compute_all_1ZB()
+
+        self.__w_b, self.__f_b = self.__system.split_branches(w, self.__modes)
+
+    def get_name(self):
+        return "One Dimensional 2"
+
+    def get_series(self):
+        return [
+            (self.__system.k_vec, self.__w_b[0]),
+            (self.__system.k_vec, self.__w_b[1])
+        ]
+
+    def draw(self, surface, time):
+        (w, h) = surface.get_size()
+
+        spacing = w / (self.__num_cells + 1)
+        start = spacing / 2
+        middle = h / 2
+
+        vecs = []
+        points = set(self._points)
+        for (x, y) in points:
+            vecs.append(self.__system.compute_displacement(
+                self.__modes,
+                self.__w_b,
+                y, x, time
+            ))
+
+        for i in range(self.__num_cells):
+            displacement = sum(vec[i] for vec in vecs)
+
+            x = int(start + spacing * i + 2 * displacement * spacing)
+            y = int(middle)
+            r = int(spacing/4)
+            c = int(0)
+            color = (127, 142, 201)
+
+            pygame.gfxdraw.aacircle(surface, x, y, r, color)
+            pygame.gfxdraw.filled_circle(surface, x, y, r, color)

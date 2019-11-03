@@ -57,6 +57,8 @@ class MainWindow(QWidget):
         self.__splitter = QSplitter(Qt.Horizontal)
         self.__splitter.addWidget(self.__left_side_widget)
         self.__splitter.addWidget(self.__model_plot)
+        self.__splitter.setStretchFactor(0, 4)
+        self.__splitter.setStretchFactor(1, 1)
 
         self.__layout = QHBoxLayout(self)
         self.__layout.addWidget(self.__splitter)

@@ -89,9 +89,11 @@ class PlotWidget(QWidget):
         self.__canvas = FigureCanvas(Figure())
         self.__canvas.setStyleSheet("background-color:transparent;")
         self.__axes = self.__canvas.figure.subplots()
-        self.__axes.figure.tight_layout()
+        self.__axes.figure.tight_layout(rect=(0.07, 0.06, 1.00, 1.00))
         self.__axes.figure.patch.set_alpha(0.5)
         self.__axes.figure.set_facecolor("None")
+        self.__axes.set_xlabel(r"$k$", fontsize=20)
+        self.__axes.set_ylabel(r"$\omega$", fontsize=20)
         self.__axes.patch.set_alpha(1.0)
 
         self.__layout = QHBoxLayout(self)

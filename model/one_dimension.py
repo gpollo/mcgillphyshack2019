@@ -83,11 +83,13 @@ class OneDimensionalModel(object):
 
 
     def split_branches(self,w,modes):
+
         w_branches = [np.array([]) for i in range(self.n)]
         f_branches = [np.array([]) for i in range(self.n)]
         for i in range(self.n):
             w_branches[i] = np.array([ f[i] for f in w ])
             f_branches[i] = np.array([ f[i] for f in modes ])
+
         return w_branches, np.array(f_branches)
 
 
@@ -103,10 +105,6 @@ class OneDimensionalModel(object):
     def compute_displacement(self,modes,w_branches,w,k,t):
         if self.n !=1:
             phase,ampl = self.compute_amplitude_and_phase(modes)
-            print(phase)
-            print(ampl)
-            print(w)
-            print(k)
 
             for i in range(self.n):
                 if w in w_branches[i]:
@@ -115,10 +113,8 @@ class OneDimensionalModel(object):
                 else:
                     pass
 
-            print(phase[branch_index])
-            print(ampl[branch_index])
-            phases_diff = phase[branch_index][0][0][k_index]
-            ampl_rel = ampl[branch_index][0][0][k_index]
+            phases_diff = phase[branch_index][k_index]
+            ampl_rel = ampl[branch_index][k_index]
 
             #
             phase = np.array([j*i for j in np.ones(self.num_cells) for i in phases_diff])
@@ -135,63 +131,174 @@ class OneDimensionalModel(object):
 from model.abstract import AbstractModel
 import pygame
 import pygame.gfxdraw
-class OneDimensionalModelWrapper(AbstractModel):
+
+class AbstractOneDimensionalModelWrapper(AbstractModel):
     def __init__(self):
-        super(OneDimensionalModelWrapper, self).__init__()
+        super(AbstractOneDimensionalModelWrapper, self).__init__()
 
-        n = 1
-        a = 1
-        m = 1
-        k0 = 1
+        self.a = 1
+        self.m = 1
+        self.k0 = 1
 
-        spacing_vec = [a,a]
-        delta_r_vec = [0]
-        masse_vec = [m]
-        k_vec = [k0,k0]
-        self.__num_cells = 21
+        atom_count     = self.get_atom_count()
+        spacing_vector = self.get_spacing_vector()
+        delta_r_vector = self.get_delta_r_vector()
+        masse_vector   = self.get_mass_vector()
+        k_vector       = self.get_k_vector()
+        cell_count     = self.get_cell_count()
 
         self.__system = OneDimensionalModel(
-            n,
-            spacing_vec,
-            delta_r_vec,
-            masse_vec,
-            k_vec,
-            self.__num_cells
+            atom_count,
+            spacing_vector,
+            delta_r_vector,
+            masse_vector,
+            k_vector,
+            cell_count
         )
-        w,self.__modes = self.__system.compute_all_1ZB()
 
-        self.__w_b, self.__f_b = self.__system.split_branches(w, self.__modes)
+        self.w, self.modes = self.__system.compute_all_1ZB()
+        self.w_b, self.f_b = self.__system.split_branches(self.w, self.modes)
 
     def get_name(self):
-        return "One Dimensional"
+        raise NotImplementedError
+
+    def get_atom_count(self):
+        raise NotImplementedError
+
+    def get_spacing_vector(self):
+        raise NotImplementedError
+
+    def get_delta_r_vector(self):
+        raise NotImplementedError
+
+    def get_mass_vector(self):
+        raise NotImplementedError
+
+    def get_k_vector(self):
+        raise NotImplementedError
+
+    def get_cell_count(self):
+        raise NotImplementedError
 
     def get_series(self):
-        return [(self.__system.k_vec, self.__w_b[0])]
+        raise NotImplementedError
+
+    def get_system(self):
+        return self.__system
+
+    def get_r(self):
+        return self.get_system().r
 
     def draw(self, surface, time):
         (w, h) = surface.get_size()
 
-        spacing = w / (self.__num_cells + 1)
+        spacing = w / (self.get_cell_count() + 1)
         start = spacing / 2
         middle = h / 2
 
-        vecs = []
+        vectors = []
         points = set(self._points)
         for (x, y) in points:
-            vecs.append(self.__system.compute_displacement(
-                self.__modes,
-                self.__w_b,
+            vectors.append(self.__system.compute_displacement(
+                self.f_b,
+                self.w_b,
                 y, x, time
             ))
 
-        for i in range(self.__num_cells):
-            displacement = sum(vec[i] for vec in vecs)
+        largest_atom = max(self.get_mass_vector())
+        for i in range(self.get_cell_count()):
+            atom = i % len(self.get_mass_vector())
+            displacement = sum(vector[i] for vector in vectors)
 
-            x = int(start + spacing * i + 2 * displacement * spacing)
+            x = int(start + spacing * i + 2 * displacement * spacing * self.get_amplitude_factor())
             y = int(middle)
-            r = int(spacing/4)
+            r = int((spacing/4) * min(1, (self.get_mass_vector()[atom] / largest_atom) * 1.8))
             c = int(0)
-            color = (127, 142, 201)
 
+            color = self.get_colors()[atom]
             pygame.gfxdraw.aacircle(surface, x, y, r, color)
             pygame.gfxdraw.filled_circle(surface, x, y, r, color)
+
+class OneDimensionalModelWrapper(AbstractOneDimensionalModelWrapper):
+    def get_name(self):
+        return "One Dimensional"
+
+    def get_atom_count(self):
+        return 1
+
+    def get_spacing_vector(self):
+        return [self.a, self.a]
+
+    def get_delta_r_vector(self):
+        return [0]
+
+    def get_mass_vector(self):
+        return [self.m]
+
+    def get_k_vector(self):
+        return [self.k0, self.k0]
+
+    def get_cell_count(self):
+        return 21
+
+    def get_series(self):
+        return [
+            (self.get_system().k_vec, self.w_b[0])
+        ]
+
+class OneDimensionalModelWrapper2(AbstractOneDimensionalModelWrapper):
+    def get_name(self):
+        return "One Dimensional 2"
+
+    def get_atom_count(self):
+        return 2
+
+    def get_spacing_vector(self):
+        return [self.a, self.a, self.a]
+
+    def get_delta_r_vector(self):
+        return [-self.a/2, self.a/2]
+
+    def get_mass_vector(self):
+        return [self.m, 2 * self.m]
+
+    def get_k_vector(self):
+        return [self.k0, self.k0, self.k0]
+
+    def get_cell_count(self):
+        return 21
+
+    def get_series(self):
+        return [
+            (self.get_system().k_vec, self.w_b[0]),
+            (self.get_system().k_vec, self.w_b[1])
+        ]
+
+class OneDimensionalModelWrapper3(AbstractOneDimensionalModelWrapper):
+    def get_name(self):
+        return "One Dimensional 3"
+
+    def get_atom_count(self):
+        return 3
+
+    def get_spacing_vector(self):
+        return [self.a, self.a, self.a, self.a]
+
+    def get_delta_r_vector(self):
+        return [-self.a, 0, self.a]
+
+    def get_mass_vector(self):
+        return [self.m, 2 * self.m, 3 * self.m]
+
+    def get_k_vector(self):
+        return [self.k0, self.k0, self.k0, self.k0]
+
+    def get_cell_count(self):
+        return 21
+
+    def get_series(self):
+        return [
+            (self.get_system().k_vec, self.w_b[0]),
+            (self.get_system().k_vec, self.w_b[1]),
+            (self.get_system().k_vec, self.w_b[2])
+        ]

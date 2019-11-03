@@ -2,7 +2,6 @@ from matplotlib.backends.backend_qt5agg import FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import rcParams
 from PyQt5.QtWidgets import QWidget, QHBoxLayout
-from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from bintrees import AVLTree
 from math import sqrt
 from numpy import pi
@@ -80,29 +79,22 @@ class LineMapper(object):
         return self.__mapping[x][y]
 
 class PlotWidget(QWidget):
-    point_selected = pyqtSignal(float, float)
-    point_unselected = pyqtSignal(float, float)
-
     def __init__(self):
         super().__init__()
 
         self.__lines = []
-        self.__series = []
         self.__mapper = None
+        self.__model = None
+
         self.__canvas = FigureCanvas(Figure())
         self.__canvas.setStyleSheet("background-color:transparent;")
         self.__axes = self.__canvas.figure.subplots()
-
-        self.__r = 1
+        self.__axes.figure.tight_layout(rect=(0.07, 0.06, 1.00, 1.00))
         self.__axes.figure.patch.set_alpha(0.5)
         self.__axes.figure.set_facecolor("None")
+        self.__axes.set_xlabel(r"$k$", fontsize=20)
+        self.__axes.set_ylabel(r"$\omega$", fontsize=20)
         self.__axes.patch.set_alpha(1.0)
-        self.__axes.set_xticks([-pi/self.__r, 0, pi/self.__r])
-        self.__axes.set_xticklabels([
-            r"$-\displaystyle\frac{\pi}{r}$",
-            r"$0$",
-            r"$\displaystyle\frac{\pi}{r}$"
-        ])
 
         self.__layout = QHBoxLayout(self)
         self.__layout.addWidget(self.__canvas)
@@ -115,42 +107,46 @@ class PlotWidget(QWidget):
         self.__canvas.mpl_connect("figure_leave_event", self.__on_figure_leave)
         self.__canvas.mpl_connect("motion_notify_event", self.__on_motion_notify)
 
-    def set_data_series(self, series):
-        # TODO: autoscale axes when changing series
+    def set_model(self, model):
+        self.__model = model
+        self.__clear_selection()
 
-        self.__series.clear()
         for line in self.__lines:
             line.remove()
         self.__lines.clear()
 
-        for (x, y) in series:
+        for (x, y) in model.get_series():
             line = self.__axes.scatter(x, y)
             self.__lines.append(line)
-        self.__series = series
 
-        self.__mapper = LineMapper(series)
-        self.__clear_selection()
+        self.__axes.set_xlim(-pi / model.get_r(), pi / model.get_r())
+        self.__axes.set_xticks([-pi / model.get_r(), 0, pi / model.get_r()])
+        self.__axes.set_xticklabels([
+            r"$-\displaystyle\frac{\pi}{r}$",
+            r"$0$",
+            r"$\displaystyle\frac{\pi}{r}$"
+        ])
+
+        self.__mapper = LineMapper(model.get_series())
+        self.__canvas.draw()
 
     def __select_point(self, point):
         if point in self.__selected_points:
             return
+
         (x, y) = point
-
         self.__selected_points[point] = self.__axes.scatter([x], [y], marker='o', s=50, color="blue")
+        self.__model.add_point(point)
         self.__canvas.draw()
-
-        self.point_selected.emit(x, y)
 
     def __unselect_point(self, point):
         if point not in self.__selected_points:
             return
-        (x, y) = point
 
         self.__selected_points[point].remove()
         del self.__selected_points[point]
+        self.__model.remove_point(point)
         self.__canvas.draw()
-
-        self.point_unselected.emit(x, y)
 
     def __clear_selection(self):
         points = dict(self.__selected_points)
@@ -177,6 +173,9 @@ class PlotWidget(QWidget):
         self.__canvas.draw()
 
     def __get_point_from_event(self, event):
+        if self.__mapper is None:
+            return
+
         (x, y) = (event.xdata, event.ydata)
         if x is None or y is None:
             return None

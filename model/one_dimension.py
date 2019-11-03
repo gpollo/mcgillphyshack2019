@@ -186,7 +186,7 @@ class OneDimensionalModelWrapper(AbstractModel):
         for i in range(self.__num_cells):
             displacement = sum(vec[i] for vec in vecs)
 
-            x = int(start + spacing * i + 2 * displacement * spacing)
+            x = int(start + spacing * i + 2 * displacement * spacing * self.get_amplitude_factor())
             y = int(middle)
             r = int(spacing/4)
             c = int(0)
@@ -254,7 +254,7 @@ class OneDimensionalModelWrapper2(AbstractModel):
         for i in range(self.__num_cells):
             displacement = sum(vec[i] for vec in vecs)
 
-            x = int(start + spacing * i + 2 * displacement * spacing)
+            x = int(start + spacing * i + 2 * displacement * spacing * self.get_amplitude_factor())
             y = int(middle)
             r = int(spacing/4)
             c = int(0)

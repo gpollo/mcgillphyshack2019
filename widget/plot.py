@@ -89,7 +89,7 @@ class PlotWidget(QWidget):
         self.__canvas = FigureCanvas(Figure())
         self.__canvas.setStyleSheet("background-color:transparent;")
         self.__axes = self.__canvas.figure.subplots()
-
+        self.__axes.figure.tight_layout()
         self.__axes.figure.patch.set_alpha(0.5)
         self.__axes.figure.set_facecolor("None")
         self.__axes.patch.set_alpha(1.0)
@@ -171,6 +171,9 @@ class PlotWidget(QWidget):
         self.__canvas.draw()
 
     def __get_point_from_event(self, event):
+        if self.__mapper is None:
+            return
+
         (x, y) = (event.xdata, event.ydata)
         if x is None or y is None:
             return None

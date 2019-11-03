@@ -1,6 +1,7 @@
 class AbstractModel(object):
     def __init__(self):
         self._points = set()
+        self.__amplitude_factor = 1
 
     def get_name(self):
         raise NotImplementedError
@@ -10,6 +11,12 @@ class AbstractModel(object):
 
     def get_r(self):
         raise NotImplementedError
+
+    def set_amplitude_factor(self, value):
+        self.__amplitude_factor = value
+
+    def get_amplitude_factor(self):
+        return self.__amplitude_factor
 
     def add_point(self, p):
         self._points.add(p)

@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QWidget, QApplication, QSplitter, QLabel, QGridLayou
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QComboBox, QGroupBox, QSlider
 from PyQt5.QtCore import Qt
 
+from model.one_dimension import OneDimensionalModelWrapper
 from model.one_dimension import OneDimensionalModelWrapper1
 from model.one_dimension import OneDimensionalModelWrapper2
 from model.one_dimension import OneDimensionalModelWrapper3
@@ -27,6 +28,7 @@ class MainWindow(QWidget):
         game.start(self.__game_widget)
 
         self.__models = [
+            OneDimensionalModelWrapper(),
             OneDimensionalModelWrapper1(),
             OneDimensionalModelWrapper2(),
             OneDimensionalModelWrapper3(),
@@ -39,16 +41,10 @@ class MainWindow(QWidget):
         self.__model_label = QLabel("Model")
         self.__model_selector = QComboBox(self)
 
-        self.__amplitude_label = QLabel("Amplitude")
-        self.__amplitude_slider = QSlider(Qt.Horizontal)
-
         self.__config_layout = QGridLayout(self)
-        self.__config_layout.setColumnStretch(1, 2)
         self.__config_layout.setColumnStretch(1, 2)
         self.__config_layout.addWidget(self.__model_label)
         self.__config_layout.addWidget(self.__model_selector)
-        self.__config_layout.addWidget(self.__amplitude_label)
-        self.__config_layout.addWidget(self.__amplitude_slider)
         self.__config_widget = QGroupBox(self)
         self.__config_widget.setLayout(self.__config_layout)
 
@@ -68,8 +64,6 @@ class MainWindow(QWidget):
         self.__layout.addWidget(self.__splitter)
         self.setLayout(self.__layout)
 
-        self.__amplitude_slider.valueChanged.connect(self.amplitude_changed)
-        self.__amplitude_slider.setValue(75)
         self.__model_selector.currentIndexChanged.connect(self.model_changed)
         for model in self.__models:
             self.__model_selector.addItem(model.get_name())
@@ -79,22 +73,35 @@ class MainWindow(QWidget):
             self.__game.set_model(None)
         else:
             self.__game.set_model(self.__model)
+            self.__model_plot.set_model(model)
+
+    def __remove_current_model_config_widgets(self):
+        if self.__model is None:
+            return
+        for old_widget in self.__model.get_config_widgets():
+            old_widget.hide()
+            self.__config_layout.removeWidget(old_widget)
+        self.__config_layout.setColumnStretch(1, 2)
+
+    def __add_current_model_config_widgets(self):
+        if self.__model is None:
+            return
+        for new_widget in self.__model.get_config_widgets():
+            new_widget.show()
+            self.__config_layout.addWidget(new_widget)
+        self.__config_layout.setColumnStretch(1, 2)
 
     def model_changed(self, index):
         self.__game.stop()
-        model = self.__models[index]
-        model.clear_points()
-        self.__model = model
-        self.__model_plot.set_model(model)
-        self.__model.set_amplitude_factor(self.__amplitude_slider.value() / 100)
-        self.__game.set_model(model)
+
+        self.__remove_current_model_config_widgets()
+        self.__model = self.__models[index]
+        self.__model.clear_points()
+        self.__add_current_model_config_widgets()
+
+        self.__model_plot.set_model(self.__model)
+        self.__game.set_model(self.__model)
         self.__game.restart()
-
-    def amplitude_changed(self, value):
-        if self.__model is None:
-            return
-
-        self.__model.set_amplitude_factor(value / 100)
 
 pygame_init()
 game = Game()

@@ -251,9 +251,6 @@ class TwoDimensionalModelWrapper(AbstractModel):
     def get_name(self):
         return "2 dimensional"
 
-    def get_config_widgets(self):
-        return []
-
     def get_series(self):
         return self.__series
 

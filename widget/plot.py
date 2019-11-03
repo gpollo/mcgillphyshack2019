@@ -79,9 +79,10 @@ class PlotWidget(QWidget):
         self.__lines = []
         self.__series = []
         self.__mapper = None
-        self.__canvas = FigureCanvas(Figure(figsize=(5, 3)))
+        self.__canvas = FigureCanvas(Figure())
         self.__canvas.setStyleSheet("background-color:transparent;")
         self.__axes = self.__canvas.figure.subplots()
+        self.__axes.figure.tight_layout(rect=[0.1, 0.1, 0.1, 0.1])
 
         self.__axes.figure.patch.set_alpha(0.5)
         self.__axes.figure.set_facecolor("None")
@@ -100,6 +101,8 @@ class PlotWidget(QWidget):
 
     @pyqtSlot()
     def data_series(self, series):
+        # TODO: autoscale axes when changing series
+
         self.__series.clear()
         for line in self.__lines:
             line.remove()
@@ -111,6 +114,7 @@ class PlotWidget(QWidget):
         self.__series = series
 
         self.__mapper = LineMapper(series)
+        self.__clear_selection()
 
     def __select_point(self, point):
         if point in self.__selected_points:
@@ -132,6 +136,11 @@ class PlotWidget(QWidget):
         self.__canvas.draw()
 
         self.point_unselected.emit(x, y)
+
+    def __clear_selection(self):
+        points = dict(self.__selected_points)
+        for point in points:
+            self.__unselect_point(point)
 
     def __toggle_point(self, point):
         if point not in self.__selected_points:

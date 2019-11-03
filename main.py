@@ -4,30 +4,64 @@ from widget.game import GameWidget
 from game import Game
 from pygame import init as pygame_init
 
-from PyQt5.QtWidgets import QWidget, QApplication, QSplitter, QHBoxLayout, QLabel
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QWidget, QApplication, QSplitter, QLabel
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QComboBox
+from PyQt5.QtCore import Qt, pyqtSlot
+
+from model.one_dimension import OneDimensionalModelWrapper
 
 class MainWindow(QWidget):
     def __init__(self, game):
         super().__init__()
 
         self.__game = game
-        self.__widget_left = GameWidget(self.__game)
-        self.__widget_right = PlotWidget()
-        self.__game.start(self.__widget_left)
+        self.__widget_game = GameWidget(self.__game)
+        self.__game.start(self.__widget_game)
 
-        self.__widget_right.data_series([
-            ([0,1,2,3,4,5], [5,4,3,2,1,0]),
-            ([4,5,6,7,8,9], [8,8,8,8,8,8]),
-        ])
+        self.__selected_model = None
+        self.__models = [
+            OneDimensionalModelWrapper(),
+            OneDimensionalModelWrapper(),
+            OneDimensionalModelWrapper(),
+        ]
+        self.__widget_plot = PlotWidget()
+        self.__widget_model = QComboBox(self)
+        self.__widget_model.currentIndexChanged.connect(self.model_changed)
+        for model in self.__models:
+            self.__widget_model.addItem(model.get_name())
+        self.__widget_plot.point_selected.connect(self.point_selected)
+        self.__widget_plot.point_unselected.connect(self.point_unselected)
+
+        self.__layout_vertical = QVBoxLayout(self)
+        self.__layout_vertical.addWidget(self.__widget_model)
+        self.__layout_vertical.addWidget(self.__widget_plot)
+        self.__widget_right = QWidget(self)
+        self.__widget_right.setLayout(self.__layout_vertical)
 
         self.__splitter = QSplitter(Qt.Horizontal)
-        self.__splitter.addWidget(self.__widget_left)
+        self.__splitter.addWidget(self.__widget_game)
         self.__splitter.addWidget(self.__widget_right)
 
         self.__layout = QHBoxLayout(self)
         self.__layout.addWidget(self.__splitter)
         self.setLayout(self.__layout)
+
+    @pyqtSlot(int)
+    def model_changed(self, index):
+        self.__widget_plot.data_series(self.__models[index].get_series())
+        self.__widget_game.change_model(self.__models[index])
+        self.__selected_model = self.__models[index]
+        print(index)
+
+    def point_selected(self, x, y):
+        if self.__selected_model is None:
+            return
+        self.__selected_model.add_point((x, y))
+
+    def point_unselected(self, x, y):
+        if self.__selected_model is None:
+            return
+        self.__selected_model.remove_point((x, y))
 
 pygame_init()
 game = Game()

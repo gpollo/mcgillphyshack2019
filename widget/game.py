@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QImage, QPainter
+from PyQt5.QtCore import QObject, pyqtSlot
 from pygame import transform
 
 class GameWidget(QWidget):
@@ -25,3 +26,8 @@ class GameWidget(QWidget):
         painter.begin(self)
         painter.drawImage(0, 0, image)
         painter.end()
+
+    @pyqtSlot(QObject)
+    def change_model(self, model):
+        self.__game.set_model(model)
+        

@@ -28,10 +28,10 @@ class MainWindow(QWidget):
         game.start(self.__game_widget)
 
         self.__models = [
-            OneDimensionalModelWrapper(),
             OneDimensionalModelWrapper1(),
             OneDimensionalModelWrapper2(),
             OneDimensionalModelWrapper3(),
+            OneDimensionalModelWrapper(),
             TwoDimensionalModelWrapper(),
         ]
         for model in self.__models:

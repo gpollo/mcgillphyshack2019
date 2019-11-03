@@ -330,6 +330,15 @@ class TwoDimensionalModelWrapper(AbstractModel):
     def draw(self, surface, time):
         (w, h) = surface.get_size()
 
+        offset_x = 0
+        offset_y = 0
+        if w < h:
+            offset_y = (h - w) / 2
+            h = w
+        else:
+            offset_x = (w - h) / 2
+            w = h
+
         margin = (w + h) * 0.05
         spacing_x = (w - 2 * margin) / (self.num_cells_x + 1)
         spacing_y = (h - 2 * margin) / (self.num_cells_y + 1)
@@ -359,6 +368,9 @@ class TwoDimensionalModelWrapper(AbstractModel):
                 y = int(start_x + spacing_y * j + 2 * displacement_y * spacing_y * self.get_amplitude_factor())
                 r = int((spacing_x + spacing_y) / 6)
                 color = self.get_colors()[0]
+
+                x = int(x + offset_x)
+                y = int(y + offset_y)
 
                 pygame.gfxdraw.aacircle(surface, x, y, r, color)
                 pygame.gfxdraw.filled_circle(surface, x, y, r, color)

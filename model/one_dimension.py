@@ -205,15 +205,17 @@ class AbstractOneDimensionalModelWrapper(AbstractModel):
                 y, x, time
             ))
 
+        largest_atom = max(self.get_mass_vector())
         for i in range(self.get_cell_count()):
+            atom = i % len(self.get_mass_vector())
             displacement = sum(vector[i] for vector in vectors)
 
             x = int(start + spacing * i + 2 * displacement * spacing * self.get_amplitude_factor())
             y = int(middle)
-            r = int(spacing/4)
+            r = int((spacing/4) * min(1, (self.get_mass_vector()[atom] / largest_atom) * 1.8))
             c = int(0)
 
-            color = self.get_colors()[i % len(self.get_mass_vector())]
+            color = self.get_colors()[atom]
             pygame.gfxdraw.aacircle(surface, x, y, r, color)
             pygame.gfxdraw.filled_circle(surface, x, y, r, color)
 

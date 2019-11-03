@@ -8,6 +8,9 @@ class AbstractModel(object):
     def get_series(self):
         raise NotImplementedError
 
+    def get_r(self):
+        raise NotImplementedError
+
     def add_point(self, p):
         self._points.add(p)
 
@@ -16,6 +19,11 @@ class AbstractModel(object):
             self._points.remove(p)
         except KeyError:
             pass
+
+    def clear_points(self):
+        points = set(self._points)
+        for p in points:
+            self.remove_point(p)
 
     def draw(self, surface, time):
         raise NotImplementedError

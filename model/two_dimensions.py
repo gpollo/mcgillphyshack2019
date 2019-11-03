@@ -181,32 +181,19 @@ import pygame.gfxdraw
 
 class TwoDimensionalModelWrapper(AbstractModel):
     def __init__(self):
-        self.__x_atom_count = 21
-        self.__x_atom_count_label  = QLabel("Atom Count (X Axis)")
-        self.__x_atom_count_slider = QSlider(Qt.Horizontal)
-        self.__x_atom_count_slider.setMinimum(4)
-        self.__x_atom_count_slider.setMaximum(25)
-
-        self.__y_atom_count = 21
-        self.__y_atom_count_label  = QLabel("Atom Count (Y Axis)")
-        self.__y_atom_count_slider = QSlider(Qt.Horizontal)
-        self.__y_atom_count_slider.setMinimum(4)
-        self.__y_atom_count_slider.setMaximum(25)
+        self.__atom_count = 21
+        self.__atom_count_label  = QLabel("Atom Count")
+        self.__atom_count_slider = QSlider(Qt.Horizontal)
+        self.__atom_count_slider.setMinimum(4)
+        self.__atom_count_slider.setMaximum(25)
 
         super(TwoDimensionalModelWrapper, self).__init__()
 
-        self.__x_atom_count_slider.valueChanged.connect(self.x_atom_count_changed)
-        self.__x_atom_count_slider.setValue(21)
+        self.__atom_count_slider.valueChanged.connect(self.atom_count_changed)
+        self.__atom_count_slider.setValue(21)
 
-        self.__y_atom_count_slider.valueChanged.connect(self.y_atom_count_changed)
-        self.__y_atom_count_slider.setValue(21)
-
-    def x_atom_count_changed(self, value):
-        self.__x_atom_count = value
-        self.recalculate_model()
-
-    def y_atom_count_changed(self, value):
-        self.__y_atom_count = value
+    def atom_count_changed(self, value):
+        self.__atom_count = value
         self.recalculate_model()
 
     def __calculate_model(self):
@@ -214,8 +201,8 @@ class TwoDimensionalModelWrapper(AbstractModel):
         self.vec_base = [np.array([self.a, 0]), np.array([0, self.a])]
         self.mass = 1
         self.k = 1
-        self.num_cells_x = self.__x_atom_count
-        self.num_cells_y = self.__y_atom_count
+        self.num_cells_x = self.__atom_count
+        self.num_cells_y = self.__atom_count
 
         self.system = one_dimensional_model(
             self.vec_base,
@@ -288,10 +275,8 @@ class TwoDimensionalModelWrapper(AbstractModel):
     def get_config_widgets(self):
         others = super(TwoDimensionalModelWrapper, self).get_config_widgets()
         return others + [
-            self.__x_atom_count_label,
-            self.__x_atom_count_slider,
-            self.__y_atom_count_label,
-            self.__y_atom_count_slider
+            self.__atom_count_label,
+            self.__atom_count_slider,
         ]
 
     def get_series(self):

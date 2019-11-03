@@ -157,10 +157,6 @@ class one_dimensional_model(object):
 
         #
         phase = np.ones(self.num_cells_x*self.num_cells_y) * phases_diff
-        amplitude_x = ampl[0] * np.ones(self.num_cells_x*self.num_cells_y)
-        amplitude_y = ampl[1] * np.ones(self.num_cells_x*self.num_cells_y)
-
-        np.array([j*i for j in np.ones(self.num_cells) for i in ampl])
 
         #
         displacement_x = ampl[0] * np.sin( np.dot(k,self.position_vec) - w*t*np.ones(self.num_cells_x*self.num_cells_y)  )

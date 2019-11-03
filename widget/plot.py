@@ -1,9 +1,19 @@
 from matplotlib.backends.backend_qt5agg import FigureCanvas
 from matplotlib.figure import Figure
+from matplotlib import rcParams
 from PyQt5.QtWidgets import QWidget, QHBoxLayout
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from bintrees import AVLTree
 from math import sqrt
+from numpy import pi
+
+rcParams["text.usetex"] = True
+rcParams["font.family"] = "sans-serif"
+rcParams["font.sans-serif"] = "Tahoma"
+rcParams["text.latex.preamble"] = [
+    "\\usepackage[utf8]{inputenc}",
+    "\\usepackage{amsmath}"
+]
 
 class LineMapper(object):
     def __init__(self, series):
@@ -79,13 +89,20 @@ class PlotWidget(QWidget):
         self.__lines = []
         self.__series = []
         self.__mapper = None
-        self.__canvas = FigureCanvas(Figure(figsize=(5, 3)))
+        self.__canvas = FigureCanvas(Figure())
         self.__canvas.setStyleSheet("background-color:transparent;")
         self.__axes = self.__canvas.figure.subplots()
 
+        self.__r = 1
         self.__axes.figure.patch.set_alpha(0.5)
         self.__axes.figure.set_facecolor("None")
-        self.__axes.patch.set_alpha(0.0)
+        self.__axes.patch.set_alpha(1.0)
+        self.__axes.set_xticks([-pi/self.__r, 0, pi/self.__r])
+        self.__axes.set_xticklabels([
+            r"$-\displaystyle\frac{\pi}{r}$",
+            r"$0$",
+            r"$\displaystyle\frac{\pi}{r}$"
+        ])
 
         self.__layout = QHBoxLayout(self)
         self.__layout.addWidget(self.__canvas)
@@ -98,8 +115,9 @@ class PlotWidget(QWidget):
         self.__canvas.mpl_connect("figure_leave_event", self.__on_figure_leave)
         self.__canvas.mpl_connect("motion_notify_event", self.__on_motion_notify)
 
-    @pyqtSlot()
-    def data_series(self, series):
+    def set_data_series(self, series):
+        # TODO: autoscale axes when changing series
+
         self.__series.clear()
         for line in self.__lines:
             line.remove()
@@ -111,6 +129,7 @@ class PlotWidget(QWidget):
         self.__series = series
 
         self.__mapper = LineMapper(series)
+        self.__clear_selection()
 
     def __select_point(self, point):
         if point in self.__selected_points:
@@ -132,6 +151,11 @@ class PlotWidget(QWidget):
         self.__canvas.draw()
 
         self.point_unselected.emit(x, y)
+
+    def __clear_selection(self):
+        points = dict(self.__selected_points)
+        for point in points:
+            self.__unselect_point(point)
 
     def __toggle_point(self, point):
         if point not in self.__selected_points:

@@ -258,6 +258,7 @@ class OneDimensionalModelWrapper(AbstractOneDimensionalModelWrapper):
         self.__atom_count_slider = QSlider(Qt.Horizontal)
         self.__atom_count_slider.setMinimum(1)
         self.__atom_count_slider.setMaximum(10)
+
         self.__cell_count        = 20
         self.__cell_count_label  = QLabel("Cell Count")
         self.__cell_count_slider = QSlider(Qt.Horizontal)

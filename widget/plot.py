@@ -115,6 +115,8 @@ class PlotWidget(QWidget):
             line.remove()
         self.__lines.clear()
 
+        while len(self.__axes.lines):
+            self.__axes.lines[-1].remove()
         for line in model.get_vertical_lines():
             self.__axes.axvline(x=line, color="black", linewidth=0.8, zorder=0)
 

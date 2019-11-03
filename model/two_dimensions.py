@@ -174,19 +174,48 @@ class one_dimensional_model(object):
         return (displacement_x, displacement_y)
 
 from model.abstract import AbstractModel
+from PyQt5.QtWidgets import QLabel, QSlider
+from PyQt5.QtCore import Qt
 import pygame
 import pygame.gfxdraw
 
 class TwoDimensionalModelWrapper(AbstractModel):
     def __init__(self):
+        self.__x_atom_count = 21
+        self.__x_atom_count_label  = QLabel("Atom Count (X Axis)")
+        self.__x_atom_count_slider = QSlider(Qt.Horizontal)
+        self.__x_atom_count_slider.setMinimum(4)
+        self.__x_atom_count_slider.setMaximum(25)
+
+        self.__y_atom_count = 21
+        self.__y_atom_count_label  = QLabel("Atom Count (Y Axis)")
+        self.__y_atom_count_slider = QSlider(Qt.Horizontal)
+        self.__y_atom_count_slider.setMinimum(4)
+        self.__y_atom_count_slider.setMaximum(25)
+
         super(TwoDimensionalModelWrapper, self).__init__()
 
+        self.__x_atom_count_slider.valueChanged.connect(self.x_atom_count_changed)
+        self.__x_atom_count_slider.setValue(21)
+
+        self.__y_atom_count_slider.valueChanged.connect(self.y_atom_count_changed)
+        self.__y_atom_count_slider.setValue(21)
+
+    def x_atom_count_changed(self, value):
+        self.__x_atom_count = value
+        self.recalculate_model()
+
+    def y_atom_count_changed(self, value):
+        self.__y_atom_count = value
+        self.recalculate_model()
+
+    def __calculate_model(self):
         self.a = 1
         self.vec_base = [np.array([self.a, 0]), np.array([0, self.a])]
         self.mass = 1
         self.k = 1
-        self.num_cells_x = 21
-        self.num_cells_y = 21
+        self.num_cells_x = self.__x_atom_count
+        self.num_cells_y = self.__y_atom_count
 
         self.system = one_dimensional_model(
             self.vec_base,
@@ -248,8 +277,22 @@ class TwoDimensionalModelWrapper(AbstractModel):
             )
         ]
 
+    def recalculate_model(self):
+        self.model_changing_push()
+        self.__calculate_model()
+        self.model_changing_pop()
+
     def get_name(self):
-        return "2 dimensional"
+        return "Two Dimensional"
+
+    def get_config_widgets(self):
+        others = super(TwoDimensionalModelWrapper, self).get_config_widgets()
+        return others + [
+            self.__x_atom_count_label,
+            self.__x_atom_count_slider,
+            self.__y_atom_count_label,
+            self.__y_atom_count_slider
+        ]
 
     def get_series(self):
         return self.__series
